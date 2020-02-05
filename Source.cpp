@@ -90,6 +90,7 @@ int main() {
 
 	startup();                                                                                // Setup all necessary information for startup (aka. load texture, shaders, models, etc).
 	Ecs &ecs = Ecs::get();
+//	LoadObject::Cube();
 	// MAIN LOOP run until the window is closed
 	while (!quit) {
 		/*// Update the camera transform based on interactive inputs or by following a predifined path.
@@ -142,15 +143,15 @@ void startup() {
 	myGraphics.proj_matrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
 
 	// Load Geometry examples
-	myCube = LoadObject::Cube();
+	myCube = LoadObject::Cube(glm::vec3(2.0f, 0.5f, 0.0f));
 
-	mySphere = LoadObject::Sphere();
+	mySphere = LoadObject::Sphere(glm::vec3(-2.0f, 0.5f, 0.0f));
 	obj[mySphere].fillColor = glm::vec4(0.0f, 1.0f, 0.0f,
 					    1.0f);    // You can change the shape fill colour, line colour or linewidth
 
-	arrowX = LoadObject::Arrow();
-	arrowY = LoadObject::Arrow();
-	arrowZ = LoadObject::Arrow();
+	arrowX = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.2f, 0.5f, 0.2f));
+	arrowY = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.2f, 0.5f, 0.2f));
+	arrowZ = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.2f, 0.5f, 0.2f));
 	obj[arrowX].fillColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	obj[arrowX].lineColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	obj[arrowY].fillColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
@@ -158,15 +159,16 @@ void startup() {
 	obj[arrowZ].fillColor = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
 	obj[arrowZ].lineColor = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
 
-	myFloor = LoadObject::Cube();
+	myFloor = LoadObject::Cube(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f),
+				   glm::vec3(1000.0f, 0.001f, 1000.0f));
 	obj[myFloor].fillColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);    // Sand Colour
 	obj[myFloor].lineColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);    // Sand again
 
-	myCylinder = LoadObject::Cylinder();
+	myCylinder = LoadObject::Cylinder(glm::vec3(-1.0f, 0.5f, 2.0f));
 	obj[myCylinder].fillColor = glm::vec4(0.7f, 0.7f, 0.7f, 1.0f);
 	obj[myCylinder].lineColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-	myLine = LoadObject::Line();
+	myLine = LoadObject::Line(glm::vec3(1.0f, 0.5f, 2.0f));
 	obj[myLine].fillColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	obj[myLine].lineColor = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
 	obj[myLine].lineWidth = 5.0f;
@@ -206,12 +208,14 @@ void updateCamera() {
 	GLfloat cameraSpeed = 1.0f * deltaTime;
 	if (keyStatus[GLFW_KEY_W]) myGraphics.cameraPosition += cameraSpeed * myGraphics.cameraFront;
 	if (keyStatus[GLFW_KEY_S]) myGraphics.cameraPosition -= cameraSpeed * myGraphics.cameraFront;
-	if (keyStatus[GLFW_KEY_A]) myGraphics.cameraPosition -=
-					   glm::normalize(glm::cross(myGraphics.cameraFront, myGraphics.cameraUp)) *
-					   cameraSpeed;
-	if (keyStatus[GLFW_KEY_D]) myGraphics.cameraPosition +=
-					   glm::normalize(glm::cross(myGraphics.cameraFront, myGraphics.cameraUp)) *
-					   cameraSpeed;
+	if (keyStatus[GLFW_KEY_A])
+		myGraphics.cameraPosition -=
+			glm::normalize(glm::cross(myGraphics.cameraFront, myGraphics.cameraUp)) *
+			cameraSpeed;
+	if (keyStatus[GLFW_KEY_D])
+		myGraphics.cameraPosition +=
+			glm::normalize(glm::cross(myGraphics.cameraFront, myGraphics.cameraUp)) *
+			cameraSpeed;
 
 	// IMPORTANT PART
 	// Calculate my view matrix using the lookAt helper function
@@ -268,6 +272,8 @@ void updateSceneElements() {
 	obj[arrowY].mv_matrix = myGraphics.viewMatrix * mv_matrix_y;
 	obj[arrowY].proj_matrix = myGraphics.proj_matrix;
 
+	typeof(glm::rotate(glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f))) oui = glm::mat4();
+
 	glm::mat4 mv_matrix_z =
 		glm::translate(glm::vec3(0.0f, 0.0f, 0.0f)) *
 		glm::rotate(glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) *
@@ -308,8 +314,21 @@ void renderScene() {
 	myGraphics.ClearViewport();
 	Ecs &ecs = Ecs::get();
 	auto &obj = ecs.getComponentMap<GraphicalObject>();
-	for (auto &elem : obj)
+	std::cout << std::endl << std::endl;
+	for (auto &elem : obj) {
+		std::cout << "OUI" << elem.second.scale.x << " " << elem.second.scale.y << " " << elem.second.scale.z
+			  << " " << std::endl;
+		glm::mat4 mv_matrix =
+			glm::translate(elem.second.trans) *
+			glm::rotate(glm::radians(0.0f), elem.second.rot) *
+			glm::scale(elem.second.scale) *
+			glm::mat4(1.0f);
+		elem.second.mv_matrix = myGraphics.viewMatrix * mv_matrix;
+		elem.second.proj_matrix = myGraphics.proj_matrix;
 		elem.second.Draw();
+	}
+	for (auto &elem : obj) {
+	}
 
 	// Draw objects in screen
 	/*Ecs::get().getComponentMap<Object>()[myFloor].Draw();

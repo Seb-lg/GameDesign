@@ -44,37 +44,16 @@ protected:
 
 class GraphicalObject : public Shapes {
 public:
-	GraphicalObject() {
+	GraphicalObject(std::string data, glm::vec3 trans, glm::vec3 rot, glm::vec3 scale);
 
-		// Exported from Blender a cube by default (OBJ File)
-		rawData = R"(
-v 0.500000 -0.500000 -0.500000
-v 0.500000 -0.500000 0.500000
-v -0.500000 -0.500000 0.500000
-v -0.500000 -0.500000 -0.500000
-v 0.500000 0.500000 -0.499999
-v 0.499999 0.500000 0.500000
-v -0.500000 0.500000 0.500000
-v -0.500000 0.500000 -0.500000
-f 1 3 4
-f 8 6 5
-f 5 2 1
-f 6 3 2
-f 7 4 3
-f 1 8 5
-f 1 2 3
-f 8 7 6
-f 5 6 2
-f 6 7 3
-f 7 8 4
-f 1 4 8)";
+	GraphicalObject() = default;
 
-		LoadObj();
-	}
+	~GraphicalObject() = default;
 
-	GraphicalObject(std::string data);
-
-	~GraphicalObject() {}
+public:
+	glm::vec3 trans;
+	glm::vec3 rot;
+	glm::vec3 scale;
 };
 
 class Cube : public Shapes {

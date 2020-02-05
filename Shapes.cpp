@@ -184,7 +184,7 @@ void Shapes::checkErrorShader(GLuint shader) {
 	}
 }
 
-GraphicalObject::GraphicalObject(std::string data) {
+GraphicalObject::GraphicalObject(std::string data, glm::vec3 trans, glm::vec3 rot, glm::vec3 scale) : trans(trans), rot(rot), scale(scale) {
 	rawData = data;
 	LoadObj();
 	Load();

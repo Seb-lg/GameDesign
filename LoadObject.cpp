@@ -9,7 +9,7 @@
 
 #include <fstream>
 
-ID LoadObject::Cube() {
+ID LoadObject::Cube(glm::vec3 trans, glm::vec3 rot, glm::vec3 scale) {
 	std::string rawData = R"(
 v 0.500000 -0.500000 -0.500000
 v 0.500000 -0.500000 0.500000
@@ -33,12 +33,12 @@ f 7 8 4
 f 1 4 8)";
 
 	ID id = Entity::getId();
-	Ecs::get().addComponent<GraphicalObject>(id, rawData);
+	Ecs::get().addComponent<GraphicalObject>(id, rawData, trans, rot, scale);
 
 	return id;
 }
 
-ID LoadObject::Sphere() {
+ID LoadObject::Sphere(glm::vec3 trans, glm::vec3 rot, glm::vec3 scale) {
 	std::string rawData = R"(
 o Sphere
 v 0.000000 -0.154509 0.475528
@@ -536,12 +536,12 @@ f 83/108/100 82/114/100 90/11/100
 )";
 
 	ID id = Entity::getId();
-	Ecs::get().addComponent<GraphicalObject>(id, rawData);
+	Ecs::get().addComponent<GraphicalObject>(id, rawData, trans, rot, scale);
 
 	return id;
 }
 
-ID LoadObject::Arrow() {
+ID LoadObject::Arrow(glm::vec3 trans, glm::vec3 rot, glm::vec3 scale) {
 	std::string rawData = R"(
 o Cone
 v 0.000000 0.800000 -0.100000
@@ -665,12 +665,12 @@ f 40 16 32
 )";
 
 	ID id = Entity::getId();
-	Ecs::get().addComponent<GraphicalObject>(id, rawData);
+	Ecs::get().addComponent<GraphicalObject>(id, rawData, trans, rot, scale);
 
 	return id;
 }
 
-ID LoadObject::Cylinder() {
+ID LoadObject::Cylinder(glm::vec3 trans, glm::vec3 rot, glm::vec3 scale) {
 	std::string rawData = R"(
 o Cylinder
 v 0.000000 -0.500000 -0.500000
@@ -788,12 +788,12 @@ f 3/38/12 7/25/12 15/27/12
 )";
 
 	ID id = Entity::getId();
-	Ecs::get().addComponent<GraphicalObject>(id, rawData);
+	Ecs::get().addComponent<GraphicalObject>(id, rawData, trans, rot, scale);
 
 	return id;
 }
 
-ID LoadObject::Line() {
+ID LoadObject::Line(glm::vec3 trans, glm::vec3 rot, glm::vec3 scale) {
 	std::string rawData = R"(
 o line
 v 0.000000 0.000100 -0.500000
@@ -834,18 +834,19 @@ f 6/9/4 2/14/4 1/10/4
 )";
 
 	ID id = Entity::getId();
-	Ecs::get().addComponent<GraphicalObject>(id, rawData);
+	Ecs::get().addComponent<GraphicalObject>(id, rawData, trans, rot, scale);
 
 	return id;
 }
 
-ID LoadObject::FromSource(std::string path) {
+ID LoadObject::FromSource(std::string path, glm::vec3 trans, glm::vec3 rot, glm::vec3 scale) {
 	std::ifstream t(path);
 	std::string rawData((std::istreambuf_iterator<char>(t)),
 			    std::istreambuf_iterator<char>());
 
 	ID id = Entity::getId();
-	Ecs::get().addComponent<GraphicalObject>(id, rawData);
+	Ecs::get().addComponent<GraphicalObject>(id, rawData, trans, rot, scale);
 
 	return id;
 }
+
