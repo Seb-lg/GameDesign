@@ -8,10 +8,10 @@ namespace ecs {
 	long Time::get(TimeUnit unit) {
 		static Time time;
 
-		return time.got(unit);
+		return time.getTime(unit);
 	}
 
-	long Time::got(TimeUnit unit) {
+	long Time::getTime(TimeUnit unit) {
 		if (unit == TimeUnit::Hours)
 			return (long) (std::chrono::duration_cast<std::chrono::hours>(_clock.now().time_since_epoch()).count());
 		else if (unit == TimeUnit::Minutes)

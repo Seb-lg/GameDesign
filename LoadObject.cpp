@@ -842,7 +842,7 @@ f 6/9/4 2/14/4 1/10/4
 ID LoadObject::FromSource(std::string path) {
 	std::ifstream t(path);
 	std::string rawData((std::istreambuf_iterator<char>(t)),
-			std::istreambuf_iterator<char>());
+			    std::istreambuf_iterator<char>());
 
 	ID id = Entity::getId();
 	Ecs::get().addComponent<GraphicalObject>(id, rawData);

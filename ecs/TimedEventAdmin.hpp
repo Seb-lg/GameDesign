@@ -13,7 +13,7 @@ public:
 	void addEvent(long time, TimeUnit unit, std::function<void()> &function);
 
 private:
-	TimedEvent	&_manager;
+	TimedEvent &_manager;
 
 };
 

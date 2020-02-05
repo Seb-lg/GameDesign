@@ -11,7 +11,7 @@
 #include "Entity.hpp"
 
 namespace ecs {
-	template <typename T>
+	template<typename T>
 	class ComponentList {
 	public:
 
@@ -29,16 +29,17 @@ namespace ecs {
 		/// \param id The ID bind to the component
 		/// \param args The arguments given to the constructor of the component
 		/// \return Return a function to delete the component
-		template <typename ...Args>
+		template<typename ...Args>
 		std::function<void()> addComponent(ID id, Args... args) {
 			_map.try_emplace(id, args...);
 			_ids.push_back(id);
 			std::sort(_ids.begin(), _ids.end());
-			return ([id](){
+			return ([id]() {
 				ecs::ComponentList<T>::get().getComponentMap().erase(id);
-				std::remove_if(ecs::ComponentList<T>::get().getIds().begin(), ecs::ComponentList<T>::get().getIds().end(), [id](ID const &d) {
-					return 	d == id;
-				});
+				std::remove_if(ecs::ComponentList<T>::get().getIds().begin(),
+					       ecs::ComponentList<T>::get().getIds().end(), [id](ID const &d) {
+						return d == id;
+					});
 			});
 		}
 
@@ -46,7 +47,7 @@ namespace ecs {
 		/// Return a vector of ID matching the function given
 		/// \param function
 		/// \return
-		std::vector<ID> getIdForComponent(std::function<bool(T&)> function) {
+		std::vector<ID> getIdForComponent(std::function<bool(T &)> function) {
 			std::vector<ID> ids;
 
 			for (auto map : _map) {
@@ -74,12 +75,12 @@ namespace ecs {
 		/// Access directly to the component of ID id
 		/// \param id The ID of the component needed
 		/// \return Return a reference of the component needed
-		T &operator[] (ID id) {
+		T &operator[](ID id) {
 			return _map[id];
 		}
 
 	private:
-		std::unordered_map<ID, T>	_map;
-		std::vector<ID>			_ids;
+		std::unordered_map<ID, T> _map;
+		std::vector<ID> _ids;
 	};
 }

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+
 using namespace std;
 
 #include <GL/glew.h>
@@ -17,62 +18,63 @@ Graphics::~Graphics() {
 };
 
 int Graphics::Init() {
-	if (!glfwInit()) {							// Checking for GLFW
+	if (!glfwInit()) {                                                        // Checking for GLFW
 		cout << "Could not initialise GLFW...";
 		return 1;
 	}
 
-	glfwSetErrorCallback(ErrorCallbackGLFW);	// Setup a function to catch and display all GLFW errors.
+	glfwSetErrorCallback(ErrorCallbackGLFW);        // Setup a function to catch and display all GLFW errors.
 
-	hintsGLFW();								// Setup glfw with various hints.		
-    
-    SetupRender();
-												// Start a window using GLFW
+	hintsGLFW();                                                                // Setup glfw with various hints.
+
+	SetupRender();
+	// Start a window using GLFW
 	string title = "GPGame_Template 2019 - HWU";
 	window = glfwCreateWindow(windowWidth, windowHeight, title.c_str(), NULL, NULL);
-	if (!window) {								// Window or OpenGL context creation failed
+	if (!window) {                                                                // Window or OpenGL context creation failed
 		cout << "Could not initialise GLFW...";
 		endProgram();
 		return 1;
 	}
 
-	glfwMakeContextCurrent(window);				// making the OpenGL context current
+	glfwMakeContextCurrent(window);                                // making the OpenGL context current
 
 	// glfwSwapInterval(1);						// Ony render when synced (V SYNC) NOte: Uncomment for better quality, but lower performance.
 
-    glfwGetFramebufferSize(window, &windowWidth, &windowHeight); // Fix for retina displays.
-    
-												// Start GLEW (note: always initialise GLEW after creating your window context.)
-	glewExperimental = GL_TRUE;					// hack: catching them all - forcing newest debug callback (glDebugMessageCallback)
+	glfwGetFramebufferSize(window, &windowWidth, &windowHeight); // Fix for retina displays.
+
+	// Start GLEW (note: always initialise GLEW after creating your window context.)
+	glewExperimental = GL_TRUE;                                        // hack: catching them all - forcing newest debug callback (glDebugMessageCallback)
 	GLenum errGLEW = glewInit();
-	if (GLEW_OK != errGLEW) {					// Problems starting GLEW?
+	if (GLEW_OK != errGLEW) {                                        // Problems starting GLEW?
 		cout << "Could not initialise GLEW...";
 		endProgram();
 		return 1;
 	}
 
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);	// Set mouse cursor FPS.
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);        // Set mouse cursor FPS.
 
-	
+
 
 	return 0;
 }
 
 void Graphics::hintsGLFW() {
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);			// Create context in debug mode - for debug message callback
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT,
+		       GL_TRUE);                        // Create context in debug mode - for debug message callback
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
 }
 
-void ErrorCallbackGLFW(int error, const char* description) {
+void ErrorCallbackGLFW(int error, const char *description) {
 	cout << "Error GLFW: " << description << "\n";
 }
 
 
 void Graphics::endProgram() {
-	glfwMakeContextCurrent(window);		// destroys window handler
-	glfwTerminate();	// destroys all windows and releases resources.
+	glfwMakeContextCurrent(window);                // destroys window handler
+	glfwTerminate();        // destroys all windows and releases resources.
 }
 
 void Graphics::SetupRender() {
@@ -94,7 +96,7 @@ void Graphics::SetOptimisations() {
 	// Enable blending
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
+
 }
 
 void Graphics::ClearViewport() {
@@ -106,11 +108,10 @@ void Graphics::ClearViewport() {
 
 void Graphics::ToggleMouse() {
 	if (showingMouse) {
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);	// Set mouse cursor FPS.
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);        // Set mouse cursor FPS.
 		cout << "Hidding Mouse..." << "\n";
-	}
-	else {
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);		// Set mouse cursor normal
+	} else {
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);                // Set mouse cursor normal
 		cout << "Showing Mouse..." << "\n";
 	}
 

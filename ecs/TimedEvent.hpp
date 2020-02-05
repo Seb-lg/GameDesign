@@ -22,21 +22,24 @@ struct TimedFuntion {
 		this->func = function;
 	}
 
-	long 			time;
-	std::function<void()>	func;
+	long time;
+	std::function<void()> func;
 };
 
 class TimedEvent {
 public:
 	TimedEvent();
+
 	~TimedEvent();
 
 	void addEvent(long time, TimeUnit unit, std::function<void()> function);
+
 	static TimedEvent &get();
 
-	void	clear();
+	void clear();
+
 private:
 
-	std::vector<TimedFuntion>		_timedFunctions;
- 	long 					_initialTime;
+	std::vector<TimedFuntion> _timedFunctions;
+	long _initialTime;
 };

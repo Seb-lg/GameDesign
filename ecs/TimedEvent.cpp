@@ -8,9 +8,8 @@
 #include "Ecs.hpp"
 #include "Time.hpp"
 
-TimedEvent::TimedEvent()
-{
-	Ecs::get().addUpdate(5, [this](){
+TimedEvent::TimedEvent() {
+	Ecs::get().addUpdate(5, [this]() {
 		long time;
 		std::vector<TimedFuntion, std::allocator<TimedFuntion>>::iterator func;
 		time = ecs::Time::get(TimeUnit::NanoSeconds);
@@ -33,11 +32,11 @@ TimedEvent::~TimedEvent() {
 	this->clear();
 }
 
-void	TimedEvent::clear() {
+void TimedEvent::clear() {
 	_timedFunctions.clear();
 }
 
-TimedEvent& TimedEvent::get() {
+TimedEvent &TimedEvent::get() {
 	static TimedEvent event;
 
 	return event;

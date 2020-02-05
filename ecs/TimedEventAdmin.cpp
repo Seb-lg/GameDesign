@@ -5,7 +5,7 @@
 #include "TimedEventAdmin.hpp"
 #include <thread>
 
-TimedEventAdmin::TimedEventAdmin():_manager(TimedEvent::get()) {
+TimedEventAdmin::TimedEventAdmin() : _manager(TimedEvent::get()) {
 
 }
 

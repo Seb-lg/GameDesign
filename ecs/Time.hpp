@@ -21,9 +21,9 @@ namespace ecs {
 
 		static long get(TimeUnit unit);
 
-		long got(TimeUnit unit);
+		long getTime(TimeUnit unit);
 
 	private:
-		std::chrono::high_resolution_clock	_clock;
+		std::chrono::high_resolution_clock _clock;
 	};
 }

@@ -30,7 +30,7 @@ public:
 	/// Get a component map of type T
 	/// \tparam T component type
 	/// \return component map of type T
-	template <typename T>
+	template<typename T>
 	std::unordered_map<ID, T> &getComponentMap() {
 		return ecs::ComponentList<T>::get().getComponentMap();
 	}
@@ -41,7 +41,7 @@ public:
 	/// \param id where the component will be added
 	/// \param args arguments to create the component
 	template<typename T, typename ...Args>
-	void addComponent(ID id, Args... args){
+	void addComponent(ID id, Args... args) {
 		get()._deleteIds[id][std::string(typeid(T).name())] = ecs::ComponentList<T>::get().addComponent(id, args...);
 		get()._ids.emplace(id);
 	}
@@ -67,7 +67,7 @@ public:
 	/// Delete a component of type T of an id
 	/// \tparam T the type of the component to delete
 	/// \param id the id which will have the component T removed
-	template <typename T>
+	template<typename T>
 	void deleteComponentforId(ID id) {
 		get()._deleteIds[id][std::string(typeid(T).name())]();
 		get()._deleteIds[id].erase(std::string(typeid(T).name()));
@@ -78,7 +78,7 @@ public:
 	/// Get every id which has the components given
 	/// \tparam Args Types of components
 	/// \return vector of ids
-	template <typename ...Args>
+	template<typename ...Args>
 	std::vector<ID> filter() {
 		std::vector<ID> valableId;
 		for (auto &it : get()._deleteIds) {
@@ -92,9 +92,9 @@ public:
 	/// \tparam Args Types of component
 	/// \param id id to check the component
 	/// \return if the id has every components return true@Alex
-	template <typename ...Args>
+	template<typename ...Args>
 	bool idHasComponents(ID id) {
-		isIn<Args...> isin;
+		isIn < Args...> isin;
 		return (isin(id));
 	}
 
@@ -111,33 +111,33 @@ public:
 	}
 
 	/// Call every updates
-	void update () {
+	void update() {
 		for (auto &func : updates) {
 			func.second();
 		}
 	}
 
-	std::unordered_map<ID, std::unordered_map<std::string, std::function<void()>>>  _deleteIds;
-	std::set<ID>									_ids;
+	std::unordered_map<ID, std::unordered_map<std::string, std::function<void()>>> _deleteIds;
+	std::set<ID> _ids;
 private:
-	std::multimap<int, std::function<void()>>				updates;
+	std::multimap<int, std::function<void()>> updates;
 
-	template <typename ...Ts>
+	template<typename ...Ts>
 	struct isIn {
-		bool operator() (ID id);
+		bool operator()(ID id);
 	};
 
-	template <typename T>
+	template<typename T>
 	struct isIn<T> {
-		bool operator() (ID id) {
+		bool operator()(ID id) {
 			auto &vec = ecs::ComponentList<T>::get().getComponentMap();
 			return (vec.find(id) != vec.end());
 		}
 	};
 
-	template <typename T, typename ...Args>
+	template<typename T, typename ...Args>
 	struct isIn<T, Args...> {
-		bool operator() (ID id) {
+		bool operator()(ID id) {
 			isIn<Args...> isin;
 			auto &vec = ecs::ComponentList<T>::get().getComponentMap();
 			return ((vec.find(id) != vec.end()) && isin(id));

@@ -10,7 +10,7 @@
 #include "Entity.hpp"
 
 namespace ecs {
-	template <typename I, typename T>
+	template<typename I, typename T>
 	class DataBank {
 	public:
 
@@ -27,9 +27,10 @@ namespace ecs {
 		/// \param iterator The iterator I
 		/// \return Return a reference of the component of given iterator
 		static T &get(I iterator) {
-			DataBank<I, T> &bank = DataBank<I,T>::get();
+			DataBank<I, T> &bank = DataBank<I, T>::get();
 			if (!bank.creator) {
-				std::cout << "src/game_engine/ecs/DataBank: creator not initialised for type " << std::string(typeid(T).name()) << std::endl;
+				std::cout << "ecs/DataBank: creator not initialised for type "
+					  << std::string(typeid(T).name()) << std::endl;
 				exit(84);
 			}
 			if (bank.map.find(iterator) == bank.map.end())
@@ -41,7 +42,7 @@ namespace ecs {
 		/// Delete the component at the given iterator
 		/// \param iterator Will delete the component of this iterator
 		static void deleteAt(I iterator) {
-			DataBank<I, T> &bank = DataBank<I,T>::get();
+			DataBank<I, T> &bank = DataBank<I, T>::get();
 			bank.map.erase(iterator);
 		}
 
@@ -49,9 +50,9 @@ namespace ecs {
 		/// Directly access to component at the given iterator
 		/// \param iterator The iteraot of the component needed
 		/// \return Return a reference to the needed component
-		T &operator[] (I iterator) {
+		T &operator[](I iterator) {
 			if (!creator) {
-				std::cout << "src/game_engine/ecs/DataBank: creator not initialised" << std::endl;
+				std::cout << "ecs/DataBank: creator not initialised" << std::endl;
 				exit(84);
 			}
 			if (map.find(iterator) == map.end())
@@ -60,7 +61,7 @@ namespace ecs {
 		}
 
 
-		std::function<T(I)>		creator;
-		std::unordered_map<I, T>	map;
+		std::function<T(I)> creator;
+		std::unordered_map<I, T> map;
 	};
 }

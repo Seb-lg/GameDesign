@@ -16,46 +16,53 @@ Shapes::~Shapes() {
 
 void Shapes::LoadObj() {
 
-	std::vector< glm::vec3 > obj_vertices;
-	std::vector< unsigned int > vertexIndices;
+	std::vector<glm::vec3> obj_vertices;
+	std::vector<unsigned int> vertexIndices;
 	istringstream rawDataStream(rawData);
-	string dataLine;  int linesDone = 0;
+	string dataLine;
+	int linesDone = 0;
 
 	while (std::getline(rawDataStream, dataLine)) {
-		if (dataLine.find("v ") != string::npos) {	// does this line have a vector?
+		if (dataLine.find("v ") != string::npos) {        // does this line have a vector?
 			glm::vec3 vertex;
 
-			int foundStart = dataLine.find(" ");  int foundEnd = dataLine.find(" ", foundStart + 1);
+			int foundStart = dataLine.find(" ");
+			int foundEnd = dataLine.find(" ", foundStart + 1);
 			vertex.x = stof(dataLine.substr(foundStart, foundEnd - foundStart));
 
-			foundStart = foundEnd; foundEnd = dataLine.find(" ", foundStart + 1);
+			foundStart = foundEnd;
+			foundEnd = dataLine.find(" ", foundStart + 1);
 			vertex.y = stof(dataLine.substr(foundStart, foundEnd - foundStart));
 
-			foundStart = foundEnd; foundEnd = dataLine.find(" ", foundStart + 1);
+			foundStart = foundEnd;
+			foundEnd = dataLine.find(" ", foundStart + 1);
 			vertex.z = stof(dataLine.substr(foundStart, foundEnd - foundStart));
 
 			obj_vertices.push_back(vertex);
-		}
-		else if (dataLine.find("f ") != string::npos) { // does this line defines a triangle face?
+		} else if (dataLine.find("f ") != string::npos) { // does this line defines a triangle face?
 			string parts[3];
 
-			int foundStart = dataLine.find(" ");  int foundEnd = dataLine.find(" ", foundStart + 1);
+			int foundStart = dataLine.find(" ");
+			int foundEnd = dataLine.find(" ", foundStart + 1);
 			parts[0] = dataLine.substr(foundStart + 1, foundEnd - foundStart - 1);
 
-			foundStart = foundEnd; foundEnd = dataLine.find(" ", foundStart + 1);
+			foundStart = foundEnd;
+			foundEnd = dataLine.find(" ", foundStart + 1);
 			parts[1] = dataLine.substr(foundStart + 1, foundEnd - foundStart - 1);
 
-			foundStart = foundEnd; foundEnd = dataLine.find(" ", foundStart + 1);
+			foundStart = foundEnd;
+			foundEnd = dataLine.find(" ", foundStart + 1);
 			parts[2] = dataLine.substr(foundStart + 1, foundEnd - foundStart - 1);
 
-			for (int i = 0; i < 3; i++) {		// for each part
+			for (int i = 0; i < 3; i++) {                // for each part
 
 				vertexIndices.push_back(stoul(parts[i].substr(0, parts[i].find("/"))));
 
-				int firstSlash = parts[i].find("/"); int secondSlash = parts[i].find("/", firstSlash + 1);
+				int firstSlash = parts[i].find("/");
+				int secondSlash = parts[i].find("/", firstSlash + 1);
 
-				if (firstSlash != (secondSlash + 1)) {	// there is texture coordinates.
-														// add code for my texture coordintes here.
+				if (firstSlash != (secondSlash + 1)) {        // there is texture coordinates.
+					// add code for my texture coordintes here.
 				}
 			}
 		}
@@ -80,7 +87,7 @@ void Shapes::LoadObj() {
 
 
 void Shapes::Load() {
-	const char * vs_source[] = { R"(
+	const char *vs_source[] = {R"(
 #version 330 core
 
 in vec4 position;
@@ -90,10 +97,10 @@ uniform mat4 proj_matrix;
 void main(void){
 	gl_Position = proj_matrix * mv_matrix * position;
 }
-)" };
+)"};
 
-	
-	const char * fs_source[] = { R"(
+
+	const char *fs_source[] = {R"(
 #version 330 core
 
 uniform vec4 inColor;
@@ -102,7 +109,7 @@ out vec4 color;
 void main(void){
 	color = inColor;
 }
-)" };
+)"};
 
 	program = glCreateProgram();
 	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
@@ -130,15 +137,15 @@ void main(void){
 	glGenBuffers(1, &buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glBufferData(GL_ARRAY_BUFFER,
-		vertexPositions.size() * sizeof(GLfloat),
-		&vertexPositions[0],
-		GL_STATIC_DRAW);
+		     vertexPositions.size() * sizeof(GLfloat),
+		     &vertexPositions[0],
+		     GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	glEnableVertexAttribArray(0);
 
-	glLinkProgram(0);	// unlink
+	glLinkProgram(0);        // unlink
 	glDisableVertexAttribArray(0); // Disable
-	glBindVertexArray(0);	// Unbind
+	glBindVertexArray(0);        // Unbind
 }
 
 void Shapes::Draw() {
@@ -154,7 +161,8 @@ void Shapes::Draw() {
 	glDrawArrays(GL_TRIANGLES, 0, vertexPositions.size() / 3);
 
 	glUniform4f(color_location, lineColor.r, lineColor.g, lineColor.b, lineColor.a);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);  glLineWidth(lineWidth);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glLineWidth(lineWidth);
 	glDrawArrays(GL_TRIANGLES, 0, vertexPositions.size() / 3);
 }
 

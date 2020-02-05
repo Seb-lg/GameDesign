@@ -13,6 +13,7 @@
 // Standard C++ libraries
 #include <iostream>
 #include <vector>
+
 using namespace std;
 
 #include "Ecs.hpp"
@@ -23,33 +24,42 @@ using namespace std;
 
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+
 #define GLM_ENABLE_EXPERIMENTAL
+
 #include <glm/gtx/transform.hpp>
 #include "Graphics.h"
 #include "Shapes.h"
 
 // MAIN FUNCTIONS
 void startup();
+
 void updateCamera();
+
 void updateSceneElements();
+
 void renderScene();
 
 // CALLBACK FUNCTIONS
-void onResizeCallback(GLFWwindow* window, int w, int h);
-void onKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-void onMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-void onMouseMoveCallback(GLFWwindow* window, double x, double y);
-void onMouseWheelCallback(GLFWwindow* window, double xoffset, double yoffset);
+void onResizeCallback(GLFWwindow *window, int w, int h);
+
+void onKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
+
+void onMouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
+
+void onMouseMoveCallback(GLFWwindow *window, double x, double y);
+
+void onMouseWheelCallback(GLFWwindow *window, double xoffset, double yoffset);
 
 // VARIABLES
-bool        quit = false;
-float       deltaTime = 0.0f;    // Keep track of time per frame.
-float       lastTime = 0.0f;    // variable to keep overall time.
-bool        keyStatus[1024];    // Hold key status.
-bool		mouseEnabled = true; // keep track of mouse toggle.
+bool quit = false;
+float deltaTime = 0.0f;    // Keep track of time per frame.
+float lastTime = 0.0f;    // variable to keep overall time.
+bool keyStatus[1024];    // Hold key status.
+bool mouseEnabled = true; // keep track of mouse toggle.
 
 // MAIN GRAPHICS OBJECT
-Graphics    myGraphics;        // Runing all the graphics in this object
+Graphics myGraphics;        // Runing all the graphics in this object
 
 // DEMO OBJECTS
 /*Cube        myCube;
@@ -74,12 +84,11 @@ ID myCylinder;
 float t = 0.001f;            // Global variable for animation
 
 
-int main()
-{
-	int errorGraphics = myGraphics.Init();			// Launch window and graphics context
-	if (errorGraphics) return 0;					// Close if something went wrong...
+int main() {
+	int errorGraphics = myGraphics.Init();                        // Launch window and graphics context
+	if (errorGraphics) return 0;                                        // Close if something went wrong...
 
-	startup();										// Setup all necessary information for startup (aka. load texture, shaders, models, etc).
+	startup();                                                                                // Setup all necessary information for startup (aka. load texture, shaders, models, etc).
 	Ecs &ecs = Ecs::get();
 	// MAIN LOOP run until the window is closed
 	while (!quit) {
@@ -101,8 +110,8 @@ int main()
 
 	myGraphics.endProgram();            // Close and clean everything up...
 
-   // cout << "\nPress any key to continue...\n";
-   // cin.ignore(); cin.get(); // delay closing console to read debugging errors.
+	// cout << "\nPress any key to continue...\n";
+	// cin.ignore(); cin.get(); // delay closing console to read debugging errors.
 
 	return 0;
 }
@@ -110,13 +119,13 @@ int main()
 void startup() {
 	Ecs &ecs = Ecs::get();
 	auto &obj = ecs.getComponentMap<GraphicalObject>();
-	ecs.addUpdate(01, [](){updateCamera();});
-	ecs.addUpdate(11, [](){updateSceneElements();});
-	ecs.addUpdate(21, [](){renderScene();});
-	ecs.addUpdate(31, [](){glfwSwapBuffers(myGraphics.window);});
+	ecs.addUpdate(01, []() { updateCamera(); });
+	ecs.addUpdate(11, []() { updateSceneElements(); });
+	ecs.addUpdate(21, []() { renderScene(); });
+	ecs.addUpdate(31, []() { glfwSwapBuffers(myGraphics.window); });
 
 	// Keep track of the running time
-	GLfloat currentTime = (GLfloat)glfwGetTime();    // retrieve timelapse
+	GLfloat currentTime = (GLfloat) glfwGetTime();    // retrieve timelapse
 	deltaTime = currentTime;                        // start delta time
 	lastTime = currentTime;                            // Save for next frame calculations.
 
@@ -129,19 +138,25 @@ void startup() {
 	glfwSetScrollCallback(myGraphics.window, onMouseWheelCallback);            // Set callback for mouse wheel.
 
 	// Calculate proj_matrix for the first time.
-	myGraphics.aspect = (float)myGraphics.windowWidth / (float)myGraphics.windowHeight;
+	myGraphics.aspect = (float) myGraphics.windowWidth / (float) myGraphics.windowHeight;
 	myGraphics.proj_matrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
 
 	// Load Geometry examples
 	myCube = LoadObject::Cube();
 
 	mySphere = LoadObject::Sphere();
-	obj[mySphere].fillColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);    // You can change the shape fill colour, line colour or linewidth
+	obj[mySphere].fillColor = glm::vec4(0.0f, 1.0f, 0.0f,
+					    1.0f);    // You can change the shape fill colour, line colour or linewidth
 
-	arrowX = LoadObject::Arrow(); arrowY = LoadObject::Arrow(); arrowZ = LoadObject::Arrow();
-	obj[arrowX].fillColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f); obj[arrowX].lineColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-	obj[arrowY].fillColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f); obj[arrowY].lineColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-	obj[arrowZ].fillColor = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f); obj[arrowZ].lineColor = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+	arrowX = LoadObject::Arrow();
+	arrowY = LoadObject::Arrow();
+	arrowZ = LoadObject::Arrow();
+	obj[arrowX].fillColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+	obj[arrowX].lineColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+	obj[arrowY].fillColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+	obj[arrowY].lineColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+	obj[arrowZ].fillColor = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+	obj[arrowZ].lineColor = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
 
 	myFloor = LoadObject::Cube();
 	obj[myFloor].fillColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);    // Sand Colour
@@ -165,8 +180,8 @@ void updateCamera() {
 	// calculate movement for FPS camera
 	GLfloat xoffset = myGraphics.mouseX - myGraphics.cameraLastX;
 	GLfloat yoffset = myGraphics.cameraLastY - myGraphics.mouseY;    // Reversed mouse movement
-	myGraphics.cameraLastX = (GLfloat)myGraphics.mouseX;
-	myGraphics.cameraLastY = (GLfloat)myGraphics.mouseY;
+	myGraphics.cameraLastX = (GLfloat) myGraphics.mouseX;
+	myGraphics.cameraLastY = (GLfloat) myGraphics.mouseY;
 
 	GLfloat sensitivity = 0.05f;
 	xoffset *= sensitivity;
@@ -191,15 +206,20 @@ void updateCamera() {
 	GLfloat cameraSpeed = 1.0f * deltaTime;
 	if (keyStatus[GLFW_KEY_W]) myGraphics.cameraPosition += cameraSpeed * myGraphics.cameraFront;
 	if (keyStatus[GLFW_KEY_S]) myGraphics.cameraPosition -= cameraSpeed * myGraphics.cameraFront;
-	if (keyStatus[GLFW_KEY_A]) myGraphics.cameraPosition -= glm::normalize(glm::cross(myGraphics.cameraFront, myGraphics.cameraUp)) * cameraSpeed;
-	if (keyStatus[GLFW_KEY_D]) myGraphics.cameraPosition += glm::normalize(glm::cross(myGraphics.cameraFront, myGraphics.cameraUp)) * cameraSpeed;
+	if (keyStatus[GLFW_KEY_A]) myGraphics.cameraPosition -=
+					   glm::normalize(glm::cross(myGraphics.cameraFront, myGraphics.cameraUp)) *
+					   cameraSpeed;
+	if (keyStatus[GLFW_KEY_D]) myGraphics.cameraPosition +=
+					   glm::normalize(glm::cross(myGraphics.cameraFront, myGraphics.cameraUp)) *
+					   cameraSpeed;
 
 	// IMPORTANT PART
 	// Calculate my view matrix using the lookAt helper function
 	if (mouseEnabled) {
-		myGraphics.viewMatrix = glm::lookAt(myGraphics.cameraPosition,			// eye
-			myGraphics.cameraPosition + myGraphics.cameraFront,					// centre
-			myGraphics.cameraUp);												// up
+		myGraphics.viewMatrix = glm::lookAt(myGraphics.cameraPosition,                        // eye
+						    myGraphics.cameraPosition +
+						    myGraphics.cameraFront,                                        // centre
+						    myGraphics.cameraUp);                                                                                                // up
 	}
 }
 
@@ -209,7 +229,7 @@ void updateSceneElements() {
 	glfwPollEvents();                                // poll callbacks
 
 	// Calculate frame time/period -- used for all (physics, animation, logic, etc).
-	GLfloat currentTime = (GLfloat)glfwGetTime();    // retrieve timelapse
+	GLfloat currentTime = (GLfloat) glfwGetTime();    // retrieve timelapse
 	deltaTime = currentTime - lastTime;                // Calculate delta time
 	lastTime = currentTime;                            // Save for next frame calculations.
 
@@ -258,21 +278,21 @@ void updateSceneElements() {
 
 	// Calculate floor position and resize
 	obj[myFloor].mv_matrix = myGraphics.viewMatrix *
-									   glm::translate(glm::vec3(0.0f, 0.0f, 0.0f)) *
-									   glm::scale(glm::vec3(1000.0f, 0.001f, 1000.0f)) *
-									   glm::mat4(1.0f);
+				 glm::translate(glm::vec3(0.0f, 0.0f, 0.0f)) *
+				 glm::scale(glm::vec3(1000.0f, 0.001f, 1000.0f)) *
+				 glm::mat4(1.0f);
 	obj[myFloor].proj_matrix = myGraphics.proj_matrix;
 
 	// Calculate cylinder
 	obj[myCylinder].mv_matrix = myGraphics.viewMatrix *
-									      glm::translate(glm::vec3(-1.0f, 0.5f, 2.0f)) *
-									      glm::mat4(1.0f);
+				    glm::translate(glm::vec3(-1.0f, 0.5f, 2.0f)) *
+				    glm::mat4(1.0f);
 	obj[myCylinder].proj_matrix = myGraphics.proj_matrix;
 
 	// Calculate Line
 	obj[myLine].mv_matrix = myGraphics.viewMatrix *
-									  glm::translate(glm::vec3(1.0f, 0.5f, 2.0f)) *
-									  glm::mat4(1.0f);
+				glm::translate(glm::vec3(1.0f, 0.5f, 2.0f)) *
+				glm::mat4(1.0f);
 	obj[myLine].proj_matrix = myGraphics.proj_matrix;
 
 
@@ -306,17 +326,18 @@ void renderScene() {
 
 
 // CallBack functions low level functionality.
-void onResizeCallback(GLFWwindow* window, int w, int h) {    // call everytime the window is resized
+void onResizeCallback(GLFWwindow *window, int w, int h) {    // call everytime the window is resized
 	//myGraphics.windowWidth = w;
 	//myGraphics.windowHeight = h;
 
 	glfwGetFramebufferSize(window, &myGraphics.windowWidth, &myGraphics.windowHeight);
 
-	myGraphics.aspect = (float)w / (float)h;
+	myGraphics.aspect = (float) w / (float) h;
 	myGraphics.proj_matrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
 }
 
-void onKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) { // called everytime a key is pressed
+void
+onKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) { // called everytime a key is pressed
 	if (action == GLFW_PRESS) keyStatus[key] = true;
 	else if (action == GLFW_RELEASE) keyStatus[key] = false;
 
@@ -330,11 +351,11 @@ void onKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mo
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
-void onMouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+void onMouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
 
 }
 
-void onMouseMoveCallback(GLFWwindow* window, double x, double y) {
+void onMouseMoveCallback(GLFWwindow *window, double x, double y) {
 	int mouseX = static_cast<int>(x);
 	int mouseY = static_cast<int>(y);
 
@@ -343,10 +364,12 @@ void onMouseMoveCallback(GLFWwindow* window, double x, double y) {
 
 	// helper variables for FPS camera
 	if (myGraphics.cameraFirstMouse) {
-		myGraphics.cameraLastX = (GLfloat)myGraphics.mouseX; myGraphics.cameraLastY = (GLfloat)myGraphics.mouseY; myGraphics.cameraFirstMouse = false;
+		myGraphics.cameraLastX = (GLfloat) myGraphics.mouseX;
+		myGraphics.cameraLastY = (GLfloat) myGraphics.mouseY;
+		myGraphics.cameraFirstMouse = false;
 	}
 }
 
-void onMouseWheelCallback(GLFWwindow* window, double xoffset, double yoffset) {
+void onMouseWheelCallback(GLFWwindow *window, double xoffset, double yoffset) {
 	int yoffsetInt = static_cast<int>(yoffset);
 }

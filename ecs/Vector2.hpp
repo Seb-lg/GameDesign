@@ -1,50 +1,44 @@
 //
 // Created by seble on 02/02/2020.
-//ted by seb on 26/12/18.
 //
 
-#ifndef ECS_VECTOR2_HPP
-#define ECS_VECTOR2_HPP
+#pragma once
 
-namespace ecs { namespace core {
-	template<typename T>
-	struct Vector2 {
-		Vector2() {}
+template<typename T>
+struct Vector2 {
+	Vector2() {}
 
-		Vector2(T x, T y) {
-			this->x = x;
-			this->y = y;
-		}
-		T x;
-		T y;
+	Vector2(T x, T y) {
+		this->x = x;
+		this->y = y;
+	}
 
-		Vector2<T> &operator=(Vector2<T> const &equal) {
-			this->x = equal.x;
-			this->y = equal.y;
-			return *this;
-		}
+	T x;
+	T y;
 
-		Vector2<T> &operator++() {
-			this->x++;
-			this->y++;
-			return *this;
-		}
+	Vector2<T> &operator=(Vector2<T> const &equal) {
+		this->x = equal.x;
+		this->y = equal.y;
+		return *this;
+	}
 
-		Vector2<T> &operator--() {
-			this->x--;
-			this->y--;
-			return *this;
-		}
+	Vector2<T> &operator++() {
+		this->x++;
+		this->y++;
+		return *this;
+	}
 
-		bool operator==(Vector2<T> const& other) {
-			return (this->x == other.x && this->y == other.y);
-		}
-	};
+	Vector2<T> &operator--() {
+		this->x--;
+		this->y--;
+		return *this;
+	}
 
-	typedef Vector2<int> Vector2i;
-	typedef Vector2<float> Vector2f;
+	bool operator==(Vector2<T> const &other) {
+		return (this->x == other.x && this->y == other.y);
+	}
+};
 
+typedef Vector2<int> Vector2i;
+typedef Vector2<float> Vector2f;
 
-	}}
-
-#endif //ECS_VECTOR2_HPP

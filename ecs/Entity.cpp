@@ -5,7 +5,7 @@
 #include "Entity.hpp"
 
 ID Entity::getId() {
-    static ID id = 1;
-    ++id;
-    return (id);
+	static ID id = 1;
+	++id;
+	return (id);
 }
