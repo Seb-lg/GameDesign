@@ -9,32 +9,34 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-#define DEFAULTMAT4 {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}
+#define DEFAULTTRANS {0.f, 0.f, 0.f}
+#define DEFAULTROT {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}
+#define DEFAULTSCALE {1.f, 1.f, 1.f}
 
 class LoadObject {
 public:
 	/// Create a Cube using the ECS
 	/// \return the ID of the created Cube
-	static ID Cube(glm::vec3 trans = {0.f, 0.f, 0.f}, glm::mat4 rot = DEFAULTMAT4, glm::vec3 scale = {1.f, 1.f, 1.f});
+	static ID Cube(glm::vec3 trans = DEFAULTTRANS, glm::mat4 rot = DEFAULTROT, glm::vec3 scale = DEFAULTSCALE, ID parent = 0);
 
 	/// Create a Sphere using the ECS
 	/// \return the ID of the created Sphere
-	static ID Sphere(glm::vec3 trans = {0.f, 0.f, 0.f}, glm::mat4 rot = DEFAULTMAT4, glm::vec3 scale = {1.f, 1.f, 1.f});
+	static ID Sphere(glm::vec3 trans = DEFAULTTRANS, glm::mat4 rot = DEFAULTROT, glm::vec3 scale = DEFAULTSCALE, ID parent = 0);
 
 	/// Create a Arrow using the ECS
 	/// \return the ID of the created Arrow
-	static ID Arrow(glm::vec3 trans = {0.f, 0.f, 0.f}, glm::mat4 rot = DEFAULTMAT4, glm::vec3 scale = {1.f, 1.f, 1.f});
+	static ID Arrow(glm::vec3 trans = DEFAULTTRANS, glm::mat4 rot = DEFAULTROT, glm::vec3 scale = DEFAULTSCALE, ID parent = 0);
 
 	/// Create a Cylinder using the ECS
 	/// \return the ID of the created Cylinder
-	static ID Cylinder(glm::vec3 trans = {0.f, 0.f, 0.f}, glm::mat4 rot = DEFAULTMAT4, glm::vec3 scale = {1.f, 1.f, 1.f});
+	static ID Cylinder(glm::vec3 trans = DEFAULTTRANS, glm::mat4 rot = DEFAULTROT, glm::vec3 scale = DEFAULTSCALE, ID parent = 0);
 
 	/// Create a Line using the ECS
 	/// \return the ID of the created Line
-	static ID Line(glm::vec3 trans = {0.f, 0.f, 0.f}, glm::mat4 rot = DEFAULTMAT4, glm::vec3 scale = {1.f, 1.f, 1.f});
+	static ID Line(glm::vec3 trans = DEFAULTTRANS, glm::mat4 rot = DEFAULTROT, glm::vec3 scale = DEFAULTSCALE, ID parent = 0);
 
 	/// Create a 3D Object from a given file
 	/// \param path to the file where the object is stored
 	/// \return the ID of the created 3D Object
-	static ID FromSource(std::string path, glm::vec3 trans = {0.f, 0.f, 0.f}, glm::mat4 rot = DEFAULTMAT4, glm::vec3 scale = {1.f, 1.f, 1.f});
+	static ID FromSource(std::string path, glm::vec3 trans = DEFAULTTRANS, glm::mat4 rot = DEFAULTROT, glm::vec3 scale = DEFAULTSCALE, ID parent = 0);
 };

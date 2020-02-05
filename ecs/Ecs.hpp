@@ -13,6 +13,7 @@
 #include <set>
 
 #include "ComponentList.hpp"
+#include "SceneTree.hpp"
 
 class Ecs {
 public:
@@ -119,6 +120,7 @@ public:
 
 	std::unordered_map<ID, std::unordered_map<std::string, std::function<void()>>> _deleteIds;
 	std::set<ID> _ids;
+	SceneTree tree;
 private:
 	std::multimap<int, std::function<void()>> updates;
 

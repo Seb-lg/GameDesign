@@ -63,7 +63,7 @@ Graphics myGraphics;        // Runing all the graphics in this object
 
 // Some global variable to do the animation.
 float t = 0.001f;            // Global variable for animation
-
+ID myCube;
 int main() {
 	int errorGraphics = myGraphics.Init();                        // Launch window and graphics context
 	if (errorGraphics) return 0;                                        // Close if something went wrong...
@@ -73,6 +73,9 @@ int main() {
 	// MAIN LOOP run until the window is closed
 	while (!quit) {
 		ecs.update();
+
+		ecs.getComponentMap<GraphicalObject>()[myCube].rot = ecs.getComponentMap<GraphicalObject>()[myCube].rot * glm::rotate(glm::radians(0.5f), glm::vec3(1.0f, 0.0f, 0.0f));
+		ecs.getComponentMap<GraphicalObject>()[myCube].rot = ecs.getComponentMap<GraphicalObject>()[myCube].rot * glm::rotate(glm::radians(0.5f), glm::vec3(1.0f, 0.0f, 1.0f));
 
 		if (glfwWindowShouldClose(myGraphics.window) == GL_TRUE)
 			quit = true;
@@ -109,15 +112,15 @@ void startup() {
 	myGraphics.proj_matrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
 
 	// Load Geometry examples
-	ID myCube = LoadObject::Cube(glm::vec3(2.0f, 0.5f, 0.0f));
+	myCube = LoadObject::Cube(glm::vec3(2.0f, 0.5f, 0.0f));
 
-	ID mySphere = LoadObject::Sphere(glm::vec3(-2.0f, 0.5f, 0.0f));
+	ID mySphere = LoadObject::Sphere(glm::vec3(0.0f, 4.f, 0.0f), DEFAULTROT, DEFAULTSCALE, myCube);
 	obj[mySphere].fillColor = glm::vec4(0.0f, 1.0f, 0.0f,
 					    1.0f);    // You can change the shape fill colour, line colour or linewidth
 
-	ID arrowX = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTMAT4, glm::vec3(0.2f, 0.5f, 0.2f));
-	ID arrowY = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTMAT4, glm::vec3(0.2f, 0.5f, 0.2f));
-	ID arrowZ = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTMAT4, glm::vec3(0.2f, 0.5f, 0.2f));
+	ID arrowX = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, glm::vec3(0.2f, 0.5f, 0.2f));
+	ID arrowY = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, glm::vec3(0.2f, 0.5f, 0.2f));
+	ID arrowZ = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, glm::vec3(0.2f, 0.5f, 0.2f));
 	obj[arrowX].fillColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	obj[arrowX].lineColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	obj[arrowX].rot = glm::rotate(glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -128,7 +131,7 @@ void startup() {
 	obj[arrowZ].lineColor = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
 	obj[arrowZ].rot = glm::rotate(glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-	ID myFloor = LoadObject::Cube(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTMAT4, glm::vec3(1000.0f, 0.001f, 1000.0f));
+	ID myFloor = LoadObject::Cube(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, glm::vec3(1000.0f, 0.001f, 1000.0f));
 	obj[myFloor].fillColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);    // Sand Colour
 	obj[myFloor].lineColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);    // Sand again
 
@@ -268,11 +271,26 @@ void updateSceneElements() {
 	obj[myLine].proj_matrix = myGraphics.proj_matrix;*/
 
 
-	t += 0.01f; // increment movement variable
+	t += 0.001f; // increment movement variable
 
 
 	 // If quit by pressing x on window.
 
+}
+
+void recursion(glm::mat4 parent, std::unordered_map<ID,GraphicalObject> &map, SceneTree& node){
+	glm::mat4 mv_matrix =
+		parent *
+		glm::translate(map[node.id].trans) *
+		map[node.id].rot *
+		glm::scale(map[node.id].scale) *
+		glm::mat4(1.0f);
+	map[node.id].mv_matrix = myGraphics.viewMatrix * mv_matrix;
+	map[node.id].proj_matrix = myGraphics.proj_matrix;
+	map[node.id].Draw();
+
+	for (auto &elem : node.childs)
+		recursion(mv_matrix, map, elem);
 }
 
 void renderScene() {
@@ -280,15 +298,18 @@ void renderScene() {
 	myGraphics.ClearViewport();
 	Ecs &ecs = Ecs::get();
 	auto &obj = ecs.getComponentMap<GraphicalObject>();
-	for (auto &elem : obj) {
-		glm::mat4 mv_matrix =
+
+
+	for (auto &elem : ecs.tree.childs) {
+		recursion(DEFAULTROT, obj, elem);
+		/*glm::mat4 mv_matrix =
 			glm::translate(elem.second.trans) *
 			elem.second.rot *
 			glm::scale(elem.second.scale) *
 			glm::mat4(1.0f);
 		elem.second.mv_matrix = myGraphics.viewMatrix * mv_matrix;
 		elem.second.proj_matrix = myGraphics.proj_matrix;
-		elem.second.Draw();
+		elem.second.Draw();*/
 	}
 
 	// Draw objects in screen
@@ -316,8 +337,7 @@ void onResizeCallback(GLFWwindow *window, int w, int h) {    // call everytime t
 	myGraphics.proj_matrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
 }
 
-void
-onKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) { // called everytime a key is pressed
+void onKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) { // called everytime a key is pressed
 	if (action == GLFW_PRESS) keyStatus[key] = true;
 	else if (action == GLFW_RELEASE) keyStatus[key] = false;
 
