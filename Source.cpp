@@ -61,28 +61,8 @@ bool mouseEnabled = true; // keep track of mouse toggle.
 // MAIN GRAPHICS OBJECT
 Graphics myGraphics;        // Runing all the graphics in this object
 
-// DEMO OBJECTS
-/*Cube        myCube;
-Sphere      sphere;
-Arrow       arrowX;
-Arrow       arrowY;
-Arrow       arrowZ;
-Cube        myFloor;
-Line        myLine;
-Cylinder    myCylinder;*/
-
-ID myCube;
-ID mySphere;
-ID arrowX;
-ID arrowY;
-ID arrowZ;
-ID myFloor;
-ID myLine;
-ID myCylinder;
-
 // Some global variable to do the animation.
 float t = 0.001f;            // Global variable for animation
-
 
 int main() {
 	int errorGraphics = myGraphics.Init();                        // Launch window and graphics context
@@ -90,29 +70,15 @@ int main() {
 
 	startup();                                                                                // Setup all necessary information for startup (aka. load texture, shaders, models, etc).
 	Ecs &ecs = Ecs::get();
-//	LoadObject::Cube();
 	// MAIN LOOP run until the window is closed
 	while (!quit) {
-		/*// Update the camera transform based on interactive inputs or by following a predifined path.
-		updateCamera();
-
-		// Update position, orientations and any other relevant visual state of any dynamic elements in the scene.
-		updateSceneElements();
-
-		// Render a still frame into an off-screen frame buffer known as the backbuffer.
-		renderScene();
-
-		// Swap the back buffer with the front buffer, making the most recently rendered image visible on-screen.
-		glfwSwapBuffers(myGraphics.window);        // swap buffers (avoid flickering and tearing)*/
-
 		ecs.update();
+
+		if (glfwWindowShouldClose(myGraphics.window) == GL_TRUE)
+			quit = true;
 	}
 
-
 	myGraphics.endProgram();            // Close and clean everything up...
-
-	// cout << "\nPress any key to continue...\n";
-	// cin.ignore(); cin.get(); // delay closing console to read debugging errors.
 
 	return 0;
 }
@@ -143,32 +109,34 @@ void startup() {
 	myGraphics.proj_matrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
 
 	// Load Geometry examples
-	myCube = LoadObject::Cube(glm::vec3(2.0f, 0.5f, 0.0f));
+	ID myCube = LoadObject::Cube(glm::vec3(2.0f, 0.5f, 0.0f));
 
-	mySphere = LoadObject::Sphere(glm::vec3(-2.0f, 0.5f, 0.0f));
+	ID mySphere = LoadObject::Sphere(glm::vec3(-2.0f, 0.5f, 0.0f));
 	obj[mySphere].fillColor = glm::vec4(0.0f, 1.0f, 0.0f,
 					    1.0f);    // You can change the shape fill colour, line colour or linewidth
 
-	arrowX = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.2f, 0.5f, 0.2f));
-	arrowY = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.2f, 0.5f, 0.2f));
-	arrowZ = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.2f, 0.5f, 0.2f));
+	ID arrowX = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTMAT4, glm::vec3(0.2f, 0.5f, 0.2f));
+	ID arrowY = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTMAT4, glm::vec3(0.2f, 0.5f, 0.2f));
+	ID arrowZ = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTMAT4, glm::vec3(0.2f, 0.5f, 0.2f));
 	obj[arrowX].fillColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	obj[arrowX].lineColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+	obj[arrowX].rot = glm::rotate(glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	obj[arrowY].fillColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 	obj[arrowY].lineColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+//	obj[arrowY].rot = glm::rotate(glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	obj[arrowZ].fillColor = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
 	obj[arrowZ].lineColor = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+	obj[arrowZ].rot = glm::rotate(glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-	myFloor = LoadObject::Cube(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f),
-				   glm::vec3(1000.0f, 0.001f, 1000.0f));
+	ID myFloor = LoadObject::Cube(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTMAT4, glm::vec3(1000.0f, 0.001f, 1000.0f));
 	obj[myFloor].fillColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);    // Sand Colour
 	obj[myFloor].lineColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);    // Sand again
 
-	myCylinder = LoadObject::Cylinder(glm::vec3(-1.0f, 0.5f, 2.0f));
+	ID myCylinder = LoadObject::Cylinder(glm::vec3(-1.0f, 0.5f, 2.0f));
 	obj[myCylinder].fillColor = glm::vec4(0.7f, 0.7f, 0.7f, 1.0f);
 	obj[myCylinder].lineColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-	myLine = LoadObject::Line(glm::vec3(1.0f, 0.5f, 2.0f));
+	ID myLine = LoadObject::Line(glm::vec3(1.0f, 0.5f, 2.0f));
 	obj[myLine].fillColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	obj[myLine].lineColor = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
 	obj[myLine].lineWidth = 5.0f;
@@ -239,7 +207,7 @@ void updateSceneElements() {
 
 	// Do not forget your ( T * R * S ) http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
 
-	// Calculate Cube position
+	/*// Calculate Cube position
 	glm::mat4 mv_matrix_cube =
 		glm::translate(glm::vec3(2.0f, 0.5f, 0.0f)) *
 		glm::mat4(1.0f);
@@ -272,8 +240,6 @@ void updateSceneElements() {
 	obj[arrowY].mv_matrix = myGraphics.viewMatrix * mv_matrix_y;
 	obj[arrowY].proj_matrix = myGraphics.proj_matrix;
 
-	typeof(glm::rotate(glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f))) oui = glm::mat4();
-
 	glm::mat4 mv_matrix_z =
 		glm::translate(glm::vec3(0.0f, 0.0f, 0.0f)) *
 		glm::rotate(glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) *
@@ -299,13 +265,13 @@ void updateSceneElements() {
 	obj[myLine].mv_matrix = myGraphics.viewMatrix *
 				glm::translate(glm::vec3(1.0f, 0.5f, 2.0f)) *
 				glm::mat4(1.0f);
-	obj[myLine].proj_matrix = myGraphics.proj_matrix;
+	obj[myLine].proj_matrix = myGraphics.proj_matrix;*/
 
 
 	t += 0.01f; // increment movement variable
 
 
-	if (glfwWindowShouldClose(myGraphics.window) == GL_TRUE) quit = true; // If quit by pressing x on window.
+	 // If quit by pressing x on window.
 
 }
 
@@ -314,20 +280,15 @@ void renderScene() {
 	myGraphics.ClearViewport();
 	Ecs &ecs = Ecs::get();
 	auto &obj = ecs.getComponentMap<GraphicalObject>();
-	std::cout << std::endl << std::endl;
 	for (auto &elem : obj) {
-		std::cout << "OUI" << elem.second.scale.x << " " << elem.second.scale.y << " " << elem.second.scale.z
-			  << " " << std::endl;
 		glm::mat4 mv_matrix =
 			glm::translate(elem.second.trans) *
-			glm::rotate(glm::radians(0.0f), elem.second.rot) *
+			elem.second.rot *
 			glm::scale(elem.second.scale) *
 			glm::mat4(1.0f);
 		elem.second.mv_matrix = myGraphics.viewMatrix * mv_matrix;
 		elem.second.proj_matrix = myGraphics.proj_matrix;
 		elem.second.Draw();
-	}
-	for (auto &elem : obj) {
 	}
 
 	// Draw objects in screen

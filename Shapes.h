@@ -44,7 +44,7 @@ protected:
 
 class GraphicalObject : public Shapes {
 public:
-	GraphicalObject(std::string data, glm::vec3 trans, glm::vec3 rot, glm::vec3 scale);
+	GraphicalObject(std::string data, glm::vec3 trans, glm::mat4 rot, glm::vec3 scale);
 
 	GraphicalObject() = default;
 
@@ -52,7 +52,7 @@ public:
 
 public:
 	glm::vec3 trans;
-	glm::vec3 rot;
+	glm::mat4 rot;
 	glm::vec3 scale;
 };
 
