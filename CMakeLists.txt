@@ -33,4 +33,4 @@ add_executable(GameDesign
         Shapes.h
         Source.cpp LoadObject.cpp LoadObject.hpp ecs/SceneTree.hpp ecs/SceneTree.cpp)
 
-target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARY} glfw)
+target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARY} glfw GLEW)

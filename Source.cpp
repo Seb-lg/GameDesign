@@ -187,6 +187,11 @@ void updateCamera() {
 		myGraphics.cameraPosition +=
 			glm::normalize(glm::cross(myGraphics.cameraFront, myGraphics.cameraUp)) *
 			cameraSpeed;
+	//up N down
+    if (keyStatus[GLFW_KEY_SPACE])
+        myGraphics.cameraPosition +=cameraSpeed * myGraphics.cameraUp;
+    if (keyStatus[GLFW_KEY_LEFT_CONTROL])
+        myGraphics.cameraPosition -=cameraSpeed * myGraphics.cameraUp;
 
 	// IMPORTANT PART
 	// Calculate my view matrix using the lookAt helper function
