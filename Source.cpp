@@ -30,6 +30,7 @@ using namespace std;
 #include <glm/gtx/transform.hpp>
 #include "Graphics.h"
 #include "Shapes.h"
+#include "Particle.hpp"
 
 // MAIN FUNCTIONS
 void startup();
@@ -67,15 +68,15 @@ ID myCube;
 int main() {
 	int errorGraphics = myGraphics.Init();                        // Launch window and graphics context
 	if (errorGraphics) return 0;                                        // Close if something went wrong...
+	Ecs &ecs = Ecs::get();
+
 
 	startup();                                                                                // Setup all necessary information for startup (aka. load texture, shaders, models, etc).
-	Ecs &ecs = Ecs::get();
+//	ID id = LoadObject::Cube({0.5f, 1.5f, 0.5f});
+//	ecs.getComponentMap<GraphicalObject>()[id].fillColor = {0.f, 0.f, 0.f, 0.f};
 	// MAIN LOOP run until the window is closed
 	while (!quit) {
 		ecs.update();
-
-		ecs.getComponentMap<GraphicalObject>()[myCube].rot = ecs.getComponentMap<GraphicalObject>()[myCube].rot * glm::rotate(glm::radians(0.5f), glm::vec3(1.0f, 0.0f, 0.0f));
-		ecs.getComponentMap<GraphicalObject>()[myCube].rot = ecs.getComponentMap<GraphicalObject>()[myCube].rot * glm::rotate(glm::radians(0.5f), glm::vec3(1.0f, 0.0f, 1.0f));
 
 		if (glfwWindowShouldClose(myGraphics.window) == GL_TRUE)
 			quit = true;
@@ -109,7 +110,7 @@ void startup() {
 
 	// Calculate proj_matrix for the first time.
 	myGraphics.aspect = (float) myGraphics.windowWidth / (float) myGraphics.windowHeight;
-	myGraphics.proj_matrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
+	myGraphics.projMatrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
 
 	// Load Geometry examples
 	myCube = LoadObject::Cube(glm::vec3(2.0f, 0.5f, 0.0f));
@@ -118,9 +119,9 @@ void startup() {
 	obj[mySphere].fillColor = glm::vec4(0.0f, 1.0f, 0.0f,
 					    1.0f);    // You can change the shape fill colour, line colour or linewidth
 
-	ID arrowX = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, glm::vec3(0.2f, 0.5f, 0.2f));
-	ID arrowY = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, glm::vec3(0.2f, 0.5f, 0.2f));
-	ID arrowZ = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, glm::vec3(0.2f, 0.5f, 0.2f));
+	ID arrowY = LoadObject::Arrow(glm::vec3(3.0f, 0.0f, 0.0f), DEFAULTROT, glm::vec3(0.2f, 0.5f, 0.2f), mySphere);
+	ID arrowX = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, DEFAULTSCALE, arrowY);
+	ID arrowZ = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, DEFAULTSCALE, arrowY);
 	obj[arrowX].fillColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	obj[arrowX].lineColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	obj[arrowX].rot = glm::rotate(glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -176,7 +177,7 @@ void updateCamera() {
 	myGraphics.cameraFront = glm::normalize(front);
 
 	// Update movement using the keys
-	GLfloat cameraSpeed = 1.0f * deltaTime;
+	GLfloat cameraSpeed = 3.1f * deltaTime;
 	if (keyStatus[GLFW_KEY_W]) myGraphics.cameraPosition += cameraSpeed * myGraphics.cameraFront;
 	if (keyStatus[GLFW_KEY_S]) myGraphics.cameraPosition -= cameraSpeed * myGraphics.cameraFront;
 	if (keyStatus[GLFW_KEY_A])
@@ -286,7 +287,7 @@ void recursion(glm::mat4 parent, std::unordered_map<ID,GraphicalObject> &map, Sc
 		glm::scale(map[node.id].scale) *
 		glm::mat4(1.0f);
 	map[node.id].mv_matrix = myGraphics.viewMatrix * mv_matrix;
-	map[node.id].proj_matrix = myGraphics.proj_matrix;
+	map[node.id].proj_matrix = myGraphics.projMatrix;
 	map[node.id].Draw();
 
 	for (auto &elem : node.childs)
@@ -299,30 +300,13 @@ void renderScene() {
 	Ecs &ecs = Ecs::get();
 	auto &obj = ecs.getComponentMap<GraphicalObject>();
 
+	static ParticleEmitter emit;
+
+	emit.update(myGraphics.viewMatrix, myGraphics.projMatrix);
 
 	for (auto &elem : ecs.tree.childs) {
 		recursion(DEFAULTROT, obj, elem);
-		/*glm::mat4 mv_matrix =
-			glm::translate(elem.second.trans) *
-			elem.second.rot *
-			glm::scale(elem.second.scale) *
-			glm::mat4(1.0f);
-		elem.second.mv_matrix = myGraphics.viewMatrix * mv_matrix;
-		elem.second.proj_matrix = myGraphics.proj_matrix;
-		elem.second.Draw();*/
 	}
-
-	// Draw objects in screen
-	/*Ecs::get().getComponentMap<Object>()[myFloor].Draw();
-	Ecs::get().getComponentMap<Object>()[myCube].Draw();
-
-
-	Ecs::get().getComponentMap<Object>()[arrowX].Draw();
-	Ecs::get().getComponentMap<Object>()[arrowY].Draw();
-	Ecs::get().getComponentMap<Object>()[arrowZ].Draw();
-
-	Ecs::get().getComponentMap<Object>()[myLine].Draw();
-	Ecs::get().getComponentMap<Object>()[myCylinder].Draw();*/
 }
 
 
@@ -334,7 +318,7 @@ void onResizeCallback(GLFWwindow *window, int w, int h) {    // call everytime t
 	glfwGetFramebufferSize(window, &myGraphics.windowWidth, &myGraphics.windowHeight);
 
 	myGraphics.aspect = (float) w / (float) h;
-	myGraphics.proj_matrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
+	myGraphics.projMatrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
 }
 
 void onKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) { // called everytime a key is pressed
