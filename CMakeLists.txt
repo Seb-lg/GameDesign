@@ -8,6 +8,8 @@ find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(glfw3 REQUIRED)
+find_package(Threads)
+
 
 include_directories(${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})
 include_directories(.)
@@ -28,12 +30,34 @@ add_executable(GameDesign
         ecs/TimedEvent.hpp
         ecs/Time.hpp
         ecs/Vector2.hpp
+        ecs/SceneTree.hpp
+        ecs/SceneTree.cpp
+
+#        particle/CubeEmitter.cpp
+#        particle/ParticleEffect.cpp
+#        particle/Particle.hpp
+#        particle/Random.hpp
+#        particle/CubeEmitter.hpp
+#        particle/ParticleEffect.hpp
+#        particle/ParticleSystemPCH.cpp
+#        particle/SphereEmitter.cpp
+#        particle/ParticleEmitter.hpp
+#        particle/ParticleSystemPCH.hpp
+#        particle/SphereEmitter.hpp
+#        particle/Interpolator.hpp
+
+
+        Particle.cpp
+        Particle.hpp
 
         Graphics.cpp
-        Graphics.h
+        Graphics.hpp
         Shapes.cpp
-        Shapes.h
-        Source.cpp LoadObject.cpp LoadObject.hpp ecs/SceneTree.hpp ecs/SceneTree.cpp Particle.cpp Particle.hpp)
+        Shapes.hpp
+        Source.cpp
+        LoadObject.cpp
+        LoadObject.hpp
+        Config.hpp)
 
 add_executable(GameTest
         test/MainTest.cpp
@@ -45,5 +69,5 @@ add_executable(GameTest
         test/shader.hpp
         )
 
-target_link_libraries(GameDesign ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARY} glfw)
-target_link_libraries(GameTest ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARY} glfw)
+target_link_libraries(GameDesign ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARY} ${CMAKE_THREAD_LIBS_INIT} glfw GLEW)
+target_link_libraries(GameTest ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARY} ${CMAKE_THREAD_LIBS_INIT} glfw GLEW)

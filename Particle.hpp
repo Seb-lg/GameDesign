@@ -16,6 +16,10 @@
 #include <vector>
 #include <string>
 
+#define FOURCC_DXT1 0x31545844
+#define FOURCC_DXT3 0x33545844
+#define FOURCC_DXT5 0x35545844
+
 static const GLfloat g_vertex_buffer_data[] = {
 	-0.5f, -0.5f, 0.0f,
 	0.5f, -0.5f, 0.0f,
@@ -28,7 +32,7 @@ struct Particle {
 	glm::vec3 speed;
 	unsigned char r,g,b,a; // Color
 	float size, angle, weight;
-	float life; // Remaining life of the particle. if <0 : dead and unused.
+	float life = -1.f; // Remaining life of the particle. if <0 : dead and unused.
 	float cameradistance; // *Squared* distance to the camera. if dead : -1.0f
 
 	Particle() = default;
@@ -44,11 +48,11 @@ public:
 
 	void update(glm::mat4 viewMatrix, glm::mat4 projMatrix);
 	void loadShaders(std::string vertex, std::string fragment);
-	void checkErrorShader(GLuint shader);
-	GLuint loadDDS(const char * imagepath);
+	GLuint loadTexture(const char * imagepath);
 	int FindUnusedParticle();
 
 private:
+	double lastTimes;
 	int LastUsedParticle = 0;
 	GLuint VertexArrayID;
 	GLuint CameraRight_worldspace_ID;
@@ -68,4 +72,25 @@ private:
 	std::vector<Particle> particles;
 	GLfloat* particulePositionData;
 	GLubyte* particuleColorData;
+};
+
+struct BITMAPFILEHEADER {
+	unsigned short  bfType;
+	unsigned long bfSize;
+	unsigned short  bfReserved1;
+	unsigned short  bfReserved2;
+	unsigned long bfOffBits;
+};
+struct BITMAPINFOHEADER {
+	unsigned long biSize;
+	long  biWidth;
+	long  biHeight;
+	unsigned short  biPlanes;
+	unsigned short  biBitCount;
+	unsigned long biCompression;
+	unsigned long biSizeImage;
+	long  biXPelsPerMeter;
+	long  biYPelsPerMeter;
+	unsigned long biClrUsed;
+	unsigned long biClrImportant;
 };

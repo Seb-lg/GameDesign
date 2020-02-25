@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <iostream>
 #include <vector>
 #include <algorithm>
 
@@ -107,14 +108,14 @@ int main( void )
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 	// Hide the mouse and enable unlimited mouvement
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// Set the mouse at the center of the screen
 	glfwPollEvents();
 	glfwSetCursorPos(window, 1024/2, 768/2);
 
 	// Dark blue background
-	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+	glClearColor(255.f, 0.0f, 0.0f, 0.0f);
 
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
@@ -201,7 +202,7 @@ int main( void )
 		for(int i=0; i<newparticles; i++){
 			int particleIndex = FindUnusedParticle();
 			ParticlesContainer[particleIndex].life = rand() % 7; // This particle will live 5 seconds.
-			ParticlesContainer[particleIndex].pos = glm::vec3(0,0,-20.0f);
+			ParticlesContainer[particleIndex].pos = glm::vec3(0,0,0.0f);
 
 			float spread = 1.5f;
 			glm::vec3 maindir = glm::vec3(0.0f, 10.0f, 0.0f);
@@ -267,6 +268,8 @@ int main( void )
 		}
 
 		SortParticles();
+		std::cout << ParticlesContainer[0].pos.x << " " << ParticlesContainer[0].pos.y << " " << ParticlesContainer[0].pos.z << std::endl;
+		std::cout << ParticlesContainer[ParticlesCount].pos.x << " " << ParticlesContainer[ParticlesCount].pos.y << " " << ParticlesContainer[ParticlesCount].pos.z << std::endl << std::endl;
 
 		glBindBuffer(GL_ARRAY_BUFFER, particles_position_buffer);
 		glBufferData(GL_ARRAY_BUFFER, MaxParticles * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW); // Buffer orphaning, a common way to improve streaming perf. See above link for details.

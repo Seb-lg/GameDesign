@@ -1,4 +1,4 @@
-#include "Shapes.h"
+#include "Shapes.hpp"
 #include <iostream>
 #include <sstream>
 
@@ -160,10 +160,10 @@ void Shapes::Draw() {
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glDrawArrays(GL_TRIANGLES, 0, vertexPositions.size() / 3);
 
-	glUniform4f(color_location, lineColor.r, lineColor.g, lineColor.b, lineColor.a);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glLineWidth(lineWidth);
-	glDrawArrays(GL_TRIANGLES, 0, vertexPositions.size() / 3);
+//	glUniform4f(color_location, lineColor.r, lineColor.g, lineColor.b, lineColor.a);
+//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//	glLineWidth(lineWidth);
+//	glDrawArrays(GL_TRIANGLES, 0, vertexPositions.size() / 3);
 }
 
 

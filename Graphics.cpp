@@ -7,7 +7,7 @@ using namespace std;
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-#include "Graphics.h"
+#include "Graphics.hpp"
 
 Graphics::Graphics() {
 
@@ -80,7 +80,8 @@ void Graphics::endProgram() {
 void Graphics::SetupRender() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwWindowHint(GLFW_SAMPLES, 2);
+//	glfwWindowHint(GLFW_SAMPLES, 2);
+	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_STEREO, GL_FALSE);
 
 
@@ -92,6 +93,7 @@ void Graphics::SetOptimisations() {
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
+//	glDepthFunc(GL_LESS);
 
 	// Enable blending
 	glEnable(GL_BLEND);
