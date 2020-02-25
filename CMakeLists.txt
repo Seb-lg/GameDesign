@@ -31,6 +31,6 @@ add_executable(GameDesign
         Graphics.h
         Shapes.cpp
         Shapes.h
-        Source.cpp LoadObject.cpp LoadObject.hpp ecs/SceneTree.hpp ecs/SceneTree.cpp)
+        Source.cpp LoadObject.cpp LoadObject.hpp ecs/SceneTree.hpp ecs/SceneTree.cpp component/pathfinding.cpp component/pathfinding.hpp component/rigidbody.cpp component/rigidbody.hpp)
 
 target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARY} glfw GLEW)
