@@ -15,15 +15,13 @@ enum class TimeUnit {
 	NanoSeconds
 };
 
-namespace ecs {
-	class Time {
-	public:
+class Time {
+public:
 
-		static long get(TimeUnit unit);
+	static long get(TimeUnit unit);
 
-		long getTime(TimeUnit unit);
+	long getTime(TimeUnit unit);
 
-	private:
-		std::chrono::high_resolution_clock _clock;
-	};
-}
+private:
+	std::chrono::high_resolution_clock _clock;
+};

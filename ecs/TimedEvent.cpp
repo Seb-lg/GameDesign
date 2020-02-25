@@ -12,7 +12,7 @@ TimedEvent::TimedEvent() {
 	Ecs::get().addUpdate(5, [this]() {
 		long time;
 		std::vector<TimedFuntion, std::allocator<TimedFuntion>>::iterator func;
-		time = ecs::Time::get(TimeUnit::NanoSeconds);
+		time = Time::get(TimeUnit::NanoSeconds);
 		func = this->_timedFunctions.begin();
 		if (this->_timedFunctions.empty() != 1) {
 			while (func != this->_timedFunctions.end()) {
@@ -25,7 +25,7 @@ TimedEvent::TimedEvent() {
 			}
 		}
 	});
-	_initialTime = ecs::Time::get(TimeUnit::NanoSeconds);
+	_initialTime = Time::get(TimeUnit::NanoSeconds);
 }
 
 TimedEvent::~TimedEvent() {
@@ -58,6 +58,6 @@ void TimedEvent::addEvent(long time, TimeUnit unit, std::function<void()> functi
 	else
 		_time = time;
 
-	_timedFunctions.emplace_back(TimedFuntion(ecs::Time::get(TimeUnit::NanoSeconds) + _time, function));
+	_timedFunctions.emplace_back(TimedFuntion(Time::get(TimeUnit::NanoSeconds) + _time, function));
 
 }

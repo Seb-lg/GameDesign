@@ -28,27 +28,24 @@ using namespace std;
 #define GLM_ENABLE_EXPERIMENTAL
 
 #include <glm/gtx/transform.hpp>
-#include "Graphics.h"
-#include "Shapes.h"
+#include <GL/glew.h>
+#include <GL/freeglut.h>
+
+#include <ecs/Time.hpp>
+#include "Graphics.hpp"
+#include "Shapes.hpp"
+#include "Particle.hpp"
 
 // MAIN FUNCTIONS
 void startup();
-
 void updateCamera();
-
 void updateSceneElements();
-
 void renderScene();
-
 // CALLBACK FUNCTIONS
 void onResizeCallback(GLFWwindow *window, int w, int h);
-
 void onKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
-
 void onMouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
-
 void onMouseMoveCallback(GLFWwindow *window, double x, double y);
-
 void onMouseWheelCallback(GLFWwindow *window, double xoffset, double yoffset);
 
 // VARIABLES
@@ -60,22 +57,22 @@ bool mouseEnabled = true; // keep track of mouse toggle.
 
 // MAIN GRAPHICS OBJECT
 Graphics myGraphics;        // Runing all the graphics in this object
+ParticleEmitter *emit;
 
 // Some global variable to do the animation.
 float t = 0.001f;            // Global variable for animation
-ID myCube;
-int main() {
+int main(int argc, char* argv[]) {
 	int errorGraphics = myGraphics.Init();                        // Launch window and graphics context
-	if (errorGraphics) return 0;                                        // Close if something went wrong...
+	emit = new ParticleEmitter();
 
-	startup();                                                                                // Setup all necessary information for startup (aka. load texture, shaders, models, etc).
+	if (errorGraphics) return 0;                                        // Close if something went wrong...
 	Ecs &ecs = Ecs::get();
-	// MAIN LOOP run until the window is closed
+
+	startup();
+
+	LoadObject::Cube({0.f, 0.f, 2.f});
 	while (!quit) {
 		ecs.update();
-
-		ecs.getComponentMap<GraphicalObject>()[myCube].rot = ecs.getComponentMap<GraphicalObject>()[myCube].rot * glm::rotate(glm::radians(0.5f), glm::vec3(1.0f, 0.0f, 0.0f));
-		ecs.getComponentMap<GraphicalObject>()[myCube].rot = ecs.getComponentMap<GraphicalObject>()[myCube].rot * glm::rotate(glm::radians(0.5f), glm::vec3(1.0f, 0.0f, 1.0f));
 
 		if (glfwWindowShouldClose(myGraphics.window) == GL_TRUE)
 			quit = true;
@@ -95,32 +92,30 @@ void startup() {
 	ecs.addUpdate(31, []() { glfwSwapBuffers(myGraphics.window); });
 
 	// Keep track of the running time
-	GLfloat currentTime = (GLfloat) glfwGetTime();    // retrieve timelapse
-	deltaTime = currentTime;                        // start delta time
-	lastTime = currentTime;                            // Save for next frame calculations.
+	GLfloat currentTime = (GLfloat) glfwGetTime();
+	deltaTime = currentTime;
+	lastTime = currentTime;
 
-	// Callback graphics and key update functions - declared in main to avoid scoping complexity.
-	// More information here : https://www.glfw.org/docs/latest/input_guide.html
-	glfwSetWindowSizeCallback(myGraphics.window, onResizeCallback);            // Set callback for resize
-	glfwSetKeyCallback(myGraphics.window, onKeyCallback);                    // Set Callback for keys
-	glfwSetMouseButtonCallback(myGraphics.window, onMouseButtonCallback);    // Set callback for mouse click
-	glfwSetCursorPosCallback(myGraphics.window, onMouseMoveCallback);        // Set callback for mouse move
-	glfwSetScrollCallback(myGraphics.window, onMouseWheelCallback);            // Set callback for mouse wheel.
+	glfwSetWindowSizeCallback(myGraphics.window, onResizeCallback);
+	glfwSetKeyCallback(myGraphics.window, onKeyCallback);
+	glfwSetMouseButtonCallback(myGraphics.window, onMouseButtonCallback);
+	glfwSetCursorPosCallback(myGraphics.window, onMouseMoveCallback);
+	glfwSetScrollCallback(myGraphics.window, onMouseWheelCallback);
 
 	// Calculate proj_matrix for the first time.
 	myGraphics.aspect = (float) myGraphics.windowWidth / (float) myGraphics.windowHeight;
-	myGraphics.proj_matrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
+	myGraphics.projMatrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
 
 	// Load Geometry examples
-	myCube = LoadObject::Cube(glm::vec3(2.0f, 0.5f, 0.0f));
+	/*myCube = LoadObject::Cube(glm::vec3(2.0f, 0.5f, 0.0f));
 
 	ID mySphere = LoadObject::Sphere(glm::vec3(0.0f, 4.f, 0.0f), DEFAULTROT, DEFAULTSCALE, myCube);
 	obj[mySphere].fillColor = glm::vec4(0.0f, 1.0f, 0.0f,
 					    1.0f);    // You can change the shape fill colour, line colour or linewidth
 
-	ID arrowX = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, glm::vec3(0.2f, 0.5f, 0.2f));
-	ID arrowY = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, glm::vec3(0.2f, 0.5f, 0.2f));
-	ID arrowZ = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, glm::vec3(0.2f, 0.5f, 0.2f));
+	ID arrowY = LoadObject::Arrow(glm::vec3(3.0f, 0.0f, 0.0f), DEFAULTROT, glm::vec3(0.2f, 0.5f, 0.2f), mySphere);
+	ID arrowX = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, DEFAULTSCALE, arrowY);
+	ID arrowZ = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, DEFAULTSCALE, arrowY);
 	obj[arrowX].fillColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	obj[arrowX].lineColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	obj[arrowX].rot = glm::rotate(glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -131,9 +126,9 @@ void startup() {
 	obj[arrowZ].lineColor = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
 	obj[arrowZ].rot = glm::rotate(glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-	ID myFloor = LoadObject::Cube(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, glm::vec3(1000.0f, 0.001f, 1000.0f));
+	*/ID myFloor = LoadObject::Cube(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, glm::vec3(1000.0f, 0.001f, 1000.0f));
 	obj[myFloor].fillColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);    // Sand Colour
-	obj[myFloor].lineColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);    // Sand again
+	obj[myFloor].lineColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);   /* // Sand again
 
 	ID myCylinder = LoadObject::Cylinder(glm::vec3(-1.0f, 0.5f, 2.0f));
 	obj[myCylinder].fillColor = glm::vec4(0.7f, 0.7f, 0.7f, 1.0f);
@@ -143,7 +138,7 @@ void startup() {
 	obj[myLine].fillColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	obj[myLine].lineColor = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
 	obj[myLine].lineWidth = 5.0f;
-
+*/
 	// Optimised Graphics
 	myGraphics.SetOptimisations();        // Cull and depth testing
 }
@@ -176,7 +171,9 @@ void updateCamera() {
 	myGraphics.cameraFront = glm::normalize(front);
 
 	// Update movement using the keys
-	GLfloat cameraSpeed = 1.0f * deltaTime;
+	deltaTime = glfwGetTime() - lastTime;
+	lastTime = glfwGetTime();
+	GLfloat cameraSpeed = 3.1f * deltaTime;
 	if (keyStatus[GLFW_KEY_W]) myGraphics.cameraPosition += cameraSpeed * myGraphics.cameraFront;
 	if (keyStatus[GLFW_KEY_S]) myGraphics.cameraPosition -= cameraSpeed * myGraphics.cameraFront;
 	if (keyStatus[GLFW_KEY_A])
@@ -204,83 +201,7 @@ void updateCamera() {
 }
 
 void updateSceneElements() {
-	auto &ecs = Ecs::get();
-	auto &obj = ecs.getComponentMap<GraphicalObject>();
-	glfwPollEvents();                                // poll callbacks
-
-	// Calculate frame time/period -- used for all (physics, animation, logic, etc).
-	GLfloat currentTime = (GLfloat) glfwGetTime();    // retrieve timelapse
-	deltaTime = currentTime - lastTime;                // Calculate delta time
-	lastTime = currentTime;                            // Save for next frame calculations.
-
-	// Do not forget your ( T * R * S ) http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
-
-	/*// Calculate Cube position
-	glm::mat4 mv_matrix_cube =
-		glm::translate(glm::vec3(2.0f, 0.5f, 0.0f)) *
-		glm::mat4(1.0f);
-	obj[myCube].mv_matrix = myGraphics.viewMatrix * mv_matrix_cube;
-	obj[myCube].proj_matrix = myGraphics.proj_matrix;
-
-	// calculate Sphere movement
-	glm::mat4 mv_matrix_sphere =
-		glm::translate(glm::vec3(-2.0f, 0.5f, 0.0f)) *
-		glm::rotate(-t, glm::vec3(0.0f, 1.0f, 0.0f)) *
-		glm::rotate(-t, glm::vec3(1.0f, 0.0f, 0.0f)) *
-		glm::mat4(1.0f);
-	obj[mySphere].mv_matrix = myGraphics.viewMatrix * mv_matrix_sphere;
-	obj[mySphere].proj_matrix = myGraphics.proj_matrix;
-
-	//Calculate Arrows translations (note: arrow model points up)
-	glm::mat4 mv_matrix_x =
-		glm::translate(glm::vec3(0.0f, 0.0f, 0.0f)) *
-		glm::rotate(glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f)) *
-		glm::scale(glm::vec3(0.2f, 0.5f, 0.2f)) *
-		glm::mat4(1.0f);
-	obj[arrowX].mv_matrix = myGraphics.viewMatrix * mv_matrix_x;
-	obj[arrowX].proj_matrix = myGraphics.proj_matrix;
-
-	glm::mat4 mv_matrix_y =
-		glm::translate(glm::vec3(0.0f, 0.0f, 0.0f)) *
-		//glm::rotate(glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f)) *    // already model pointing up
-		glm::scale(glm::vec3(0.2f, 0.5f, 0.2f)) *
-		glm::mat4(1.0f);
-	obj[arrowY].mv_matrix = myGraphics.viewMatrix * mv_matrix_y;
-	obj[arrowY].proj_matrix = myGraphics.proj_matrix;
-
-	glm::mat4 mv_matrix_z =
-		glm::translate(glm::vec3(0.0f, 0.0f, 0.0f)) *
-		glm::rotate(glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) *
-		glm::scale(glm::vec3(0.2f, 0.5f, 0.2f)) *
-		glm::mat4(1.0f);
-	obj[arrowZ].mv_matrix = myGraphics.viewMatrix * mv_matrix_z;
-	obj[arrowZ].proj_matrix = myGraphics.proj_matrix;
-
-	// Calculate floor position and resize
-	obj[myFloor].mv_matrix = myGraphics.viewMatrix *
-				 glm::translate(glm::vec3(0.0f, 0.0f, 0.0f)) *
-				 glm::scale(glm::vec3(1000.0f, 0.001f, 1000.0f)) *
-				 glm::mat4(1.0f);
-	obj[myFloor].proj_matrix = myGraphics.proj_matrix;
-
-	// Calculate cylinder
-	obj[myCylinder].mv_matrix = myGraphics.viewMatrix *
-				    glm::translate(glm::vec3(-1.0f, 0.5f, 2.0f)) *
-				    glm::mat4(1.0f);
-	obj[myCylinder].proj_matrix = myGraphics.proj_matrix;
-
-	// Calculate Line
-	obj[myLine].mv_matrix = myGraphics.viewMatrix *
-				glm::translate(glm::vec3(1.0f, 0.5f, 2.0f)) *
-				glm::mat4(1.0f);
-	obj[myLine].proj_matrix = myGraphics.proj_matrix;*/
-
-
-	t += 0.001f; // increment movement variable
-
-
-	 // If quit by pressing x on window.
-
+	glfwPollEvents();
 }
 
 void recursion(glm::mat4 parent, std::unordered_map<ID,GraphicalObject> &map, SceneTree& node){
@@ -291,7 +212,7 @@ void recursion(glm::mat4 parent, std::unordered_map<ID,GraphicalObject> &map, Sc
 		glm::scale(map[node.id].scale) *
 		glm::mat4(1.0f);
 	map[node.id].mv_matrix = myGraphics.viewMatrix * mv_matrix;
-	map[node.id].proj_matrix = myGraphics.proj_matrix;
+	map[node.id].proj_matrix = myGraphics.projMatrix;
 	map[node.id].Draw();
 
 	for (auto &elem : node.childs)
@@ -299,35 +220,14 @@ void recursion(glm::mat4 parent, std::unordered_map<ID,GraphicalObject> &map, Sc
 }
 
 void renderScene() {
-	// Clear viewport - start a new frame.
 	myGraphics.ClearViewport();
 	Ecs &ecs = Ecs::get();
 	auto &obj = ecs.getComponentMap<GraphicalObject>();
 
-
 	for (auto &elem : ecs.tree.childs) {
 		recursion(DEFAULTROT, obj, elem);
-		/*glm::mat4 mv_matrix =
-			glm::translate(elem.second.trans) *
-			elem.second.rot *
-			glm::scale(elem.second.scale) *
-			glm::mat4(1.0f);
-		elem.second.mv_matrix = myGraphics.viewMatrix * mv_matrix;
-		elem.second.proj_matrix = myGraphics.proj_matrix;
-		elem.second.Draw();*/
 	}
-
-	// Draw objects in screen
-	/*Ecs::get().getComponentMap<Object>()[myFloor].Draw();
-	Ecs::get().getComponentMap<Object>()[myCube].Draw();
-
-
-	Ecs::get().getComponentMap<Object>()[arrowX].Draw();
-	Ecs::get().getComponentMap<Object>()[arrowY].Draw();
-	Ecs::get().getComponentMap<Object>()[arrowZ].Draw();
-
-	Ecs::get().getComponentMap<Object>()[myLine].Draw();
-	Ecs::get().getComponentMap<Object>()[myCylinder].Draw();*/
+	emit->update(myGraphics.viewMatrix, myGraphics.projMatrix);
 }
 
 
@@ -339,7 +239,7 @@ void onResizeCallback(GLFWwindow *window, int w, int h) {    // call everytime t
 	glfwGetFramebufferSize(window, &myGraphics.windowWidth, &myGraphics.windowHeight);
 
 	myGraphics.aspect = (float) w / (float) h;
-	myGraphics.proj_matrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
+	myGraphics.projMatrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
 }
 
 void onKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) { // called everytime a key is pressed

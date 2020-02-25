@@ -2,7 +2,7 @@
 // Created by lucienR on 15/02/2020.
 //
 #include <iostream>
-using namespace std
+using namespace std;
 
 #ifndef GAMEDESIGN_PATHFINDING_HPP
 #define GAMEDESIGN_PATHFINDING_HPP

@@ -5,7 +5,7 @@
 #include "Entity.hpp"
 #include "Ecs.hpp"
 #include "LoadObject.hpp"
-#include "Shapes.h"
+#include "Shapes.hpp"
 #include "SceneTree.hpp"
 
 #include <fstream>
