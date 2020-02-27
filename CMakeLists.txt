@@ -40,6 +40,11 @@ add_executable(GameDesign
         components/Particle.cpp
         components/Particle.hpp
 
+        component/pathfinding.cpp
+        component/pathfinding.hpp
+        component/rigidbody.cpp
+        component/rigidbody.hpp
+        
         Graphics.cpp
         Graphics.hpp
         Source.cpp

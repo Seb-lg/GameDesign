@@ -1,0 +1,8 @@
+//
+// Created by lulutor on 22/02/2020.
+//
+
+#ifndef GAMEDESIGN_RIGIDBODY_HPP
+#define GAMEDESIGN_RIGIDBODY_HPP
+
+#endif //GAMEDESIGN_RIGIDBODY_HPP
