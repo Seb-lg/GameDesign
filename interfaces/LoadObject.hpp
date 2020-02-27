@@ -8,10 +8,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-
-#define DEFAULTTRANS {0.f, 0.f, 0.f}
-#define DEFAULTROT {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}
-#define DEFAULTSCALE {1.f, 1.f, 1.f}
+#include <components/Position3D.hpp>
 
 class LoadObject {
 public:

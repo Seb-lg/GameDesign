@@ -5,6 +5,7 @@
 #pragma once
 
 #include <list>
+#include <glm/glm.hpp>
 #include "Entity.hpp"
 
 class SceneTree {

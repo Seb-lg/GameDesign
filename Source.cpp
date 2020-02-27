@@ -17,7 +17,7 @@
 using namespace std;
 
 #include "Ecs.hpp"
-#include "LoadObject.hpp"
+#include "interfaces/LoadObject.hpp"
 
 // Helper graphic libraries
 #include <GL/glew.h>
@@ -32,14 +32,16 @@ using namespace std;
 #include <GL/freeglut.h>
 
 #include <ecs/Time.hpp>
+#include <interfaces/Movement.hpp>
+#include <components/Speed3D.hpp>
+#include <components/Keyboard.hpp>
 #include "Graphics.hpp"
-#include "Shapes.hpp"
-#include "Particle.hpp"
+#include "components/Shapes.hpp"
+#include "components/Particle.hpp"
 
 // MAIN FUNCTIONS
 void startup();
 void updateCamera();
-void updateSceneElements();
 void renderScene();
 // CALLBACK FUNCTIONS
 void onResizeCallback(GLFWwindow *window, int w, int h);
@@ -49,37 +51,32 @@ void onMouseMoveCallback(GLFWwindow *window, double x, double y);
 void onMouseWheelCallback(GLFWwindow *window, double xoffset, double yoffset);
 
 // VARIABLES
-bool quit = false;
 float deltaTime = 0.0f;    // Keep track of time per frame.
 float lastTime = 0.0f;    // variable to keep overall time.
-bool keyStatus[1024];    // Hold key status.
+bool *keyStatus;    // Hold key status.
 bool mouseEnabled = true; // keep track of mouse toggle.
 
 // MAIN GRAPHICS OBJECT
-Graphics myGraphics;        // Runing all the graphics in this object
+Graphics myGraphics;
 ParticleEmitter *emit;
 
 // Some global variable to do the animation.
-float t = 0.001f;            // Global variable for animation
+float t = 0.001f;
 int main(int argc, char* argv[]) {
-	int errorGraphics = myGraphics.Init();                        // Launch window and graphics context
-	emit = new ParticleEmitter();
-
-	if (errorGraphics) return 0;                                        // Close if something went wrong...
+	keyStatus = new bool[1024];
+	if (myGraphics.Init()) return 0;
 	Ecs &ecs = Ecs::get();
-
 	startup();
 
-	LoadObject::Cube({0.f, 0.f, 2.f});
-	while (!quit) {
-		ecs.update();
+	emit = new ParticleEmitter();
+	ID id = LoadObject::Cube({0.f, 0.5f, 2.f});
+	Movement::WASD(id);
 
-		if (glfwWindowShouldClose(myGraphics.window) == GL_TRUE)
-			quit = true;
+	while (glfwWindowShouldClose(myGraphics.window) != GL_TRUE) {
+		ecs.update();
 	}
 
-	myGraphics.endProgram();            // Close and clean everything up...
-
+	myGraphics.endProgram();
 	return 0;
 }
 
@@ -87,8 +84,57 @@ void startup() {
 	Ecs &ecs = Ecs::get();
 	auto &obj = ecs.getComponentMap<GraphicalObject>();
 	ecs.addUpdate(01, []() { updateCamera(); });
-	ecs.addUpdate(11, []() { updateSceneElements(); });
+	ecs.addUpdate(02, []() { glfwPollEvents(); });
+	ecs.addUpdate(10, [&]() {
+		auto &ecs = Ecs::get();
+		auto &keybs = ecs.getComponentMap<Keyboard>();
+
+		for (auto &keyb: keybs) {
+			auto it = keyb.second.keys.begin();
+			for (int i = 0; i < 1024; ++i, ++it) {
+				if (*it) {
+					(*it)(keyStatus[i]);
+				}
+			}
+		}
+	});
+	ecs.addUpdate(12, [&]() {
+		auto &ecs = Ecs::get();
+		auto &speeds = ecs.getComponentMap<Speed3D>();
+		auto &positions = ecs.getComponentMap<Position3D>();
+		auto ids = ecs.filter<Speed3D, Position3D>();
+
+		for (const auto &id: ids) {
+			auto &dir = speeds[id].direction;
+			auto &speed = speeds[id].speed;
+			auto &pos = positions[id].trans;
+			float total = abs(dir.x) + abs(dir.y) + abs(dir.z);
+
+			if (total == 0.f) {
+				return;
+			}
+
+			std::cout << total << std::endl;
+			pos.x += (dir.x == 0.f? 0.f: speed * deltaTime * (total /dir.x));
+			pos.y += (dir.y == 0.f? 0.f: speed * deltaTime * (total /dir.y));
+			pos.z += (dir.z == 0.f? 0.f: speed * deltaTime * (total /dir.z));
+		}
+	});
 	ecs.addUpdate(21, []() { renderScene(); });
+	ecs.addUpdate(22, [&]() {
+		auto &ecs = Ecs::get();
+		auto &positions = ecs.getComponentMap<Position3D>();
+		auto &graphicals = ecs.getComponentMap<GraphicalObject>();
+
+		for (auto &graphical: graphicals) {
+			graphical.second.mv_matrix = positions[graphical.first].mv_matrix;
+			graphical.second.proj_matrix = myGraphics.projMatrix;
+			graphical.second.Draw();
+		}
+	});
+	ecs.addUpdate(23, [&]() {
+		emit->update(myGraphics.viewMatrix, myGraphics.projMatrix);
+	});
 	ecs.addUpdate(31, []() { glfwSwapBuffers(myGraphics.window); });
 
 	// Keep track of the running time
@@ -106,39 +152,10 @@ void startup() {
 	myGraphics.aspect = (float) myGraphics.windowWidth / (float) myGraphics.windowHeight;
 	myGraphics.projMatrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
 
-	// Load Geometry examples
-	/*myCube = LoadObject::Cube(glm::vec3(2.0f, 0.5f, 0.0f));
+	ID myFloor = LoadObject::Cube(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, glm::vec3(1000.0f, 0.001f, 1000.0f));
+	obj[myFloor].fillColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);
+	obj[myFloor].lineColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);
 
-	ID mySphere = LoadObject::Sphere(glm::vec3(0.0f, 4.f, 0.0f), DEFAULTROT, DEFAULTSCALE, myCube);
-	obj[mySphere].fillColor = glm::vec4(0.0f, 1.0f, 0.0f,
-					    1.0f);    // You can change the shape fill colour, line colour or linewidth
-
-	ID arrowY = LoadObject::Arrow(glm::vec3(3.0f, 0.0f, 0.0f), DEFAULTROT, glm::vec3(0.2f, 0.5f, 0.2f), mySphere);
-	ID arrowX = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, DEFAULTSCALE, arrowY);
-	ID arrowZ = LoadObject::Arrow(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, DEFAULTSCALE, arrowY);
-	obj[arrowX].fillColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-	obj[arrowX].lineColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-	obj[arrowX].rot = glm::rotate(glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	obj[arrowY].fillColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-	obj[arrowY].lineColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-//	obj[arrowY].rot = glm::rotate(glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	obj[arrowZ].fillColor = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
-	obj[arrowZ].lineColor = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
-	obj[arrowZ].rot = glm::rotate(glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-	*/ID myFloor = LoadObject::Cube(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, glm::vec3(1000.0f, 0.001f, 1000.0f));
-	obj[myFloor].fillColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);    // Sand Colour
-	obj[myFloor].lineColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);   /* // Sand again
-
-	ID myCylinder = LoadObject::Cylinder(glm::vec3(-1.0f, 0.5f, 2.0f));
-	obj[myCylinder].fillColor = glm::vec4(0.7f, 0.7f, 0.7f, 1.0f);
-	obj[myCylinder].lineColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-
-	ID myLine = LoadObject::Line(glm::vec3(1.0f, 0.5f, 2.0f));
-	obj[myLine].fillColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	obj[myLine].lineColor = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
-	obj[myLine].lineWidth = 5.0f;
-*/
 	// Optimised Graphics
 	myGraphics.SetOptimisations();        // Cull and depth testing
 }
@@ -200,11 +217,7 @@ void updateCamera() {
 	}
 }
 
-void updateSceneElements() {
-	glfwPollEvents();
-}
-
-void recursion(glm::mat4 parent, std::unordered_map<ID,GraphicalObject> &map, SceneTree& node){
+void recursion(glm::mat4 parent, std::unordered_map<ID, Position3D> &map, SceneTree& node){
 	glm::mat4 mv_matrix =
 		parent *
 		glm::translate(map[node.id].trans) *
@@ -212,8 +225,8 @@ void recursion(glm::mat4 parent, std::unordered_map<ID,GraphicalObject> &map, Sc
 		glm::scale(map[node.id].scale) *
 		glm::mat4(1.0f);
 	map[node.id].mv_matrix = myGraphics.viewMatrix * mv_matrix;
-	map[node.id].proj_matrix = myGraphics.projMatrix;
-	map[node.id].Draw();
+	/*map[node.id].proj_matrix = myGraphics.projMatrix;
+	map[node.id].Draw();*/
 
 	for (auto &elem : node.childs)
 		recursion(mv_matrix, map, elem);
@@ -222,12 +235,11 @@ void recursion(glm::mat4 parent, std::unordered_map<ID,GraphicalObject> &map, Sc
 void renderScene() {
 	myGraphics.ClearViewport();
 	Ecs &ecs = Ecs::get();
-	auto &obj = ecs.getComponentMap<GraphicalObject>();
+	auto &obj = ecs.getComponentMap<Position3D>();
 
 	for (auto &elem : ecs.tree.childs) {
 		recursion(DEFAULTROT, obj, elem);
 	}
-	emit->update(myGraphics.viewMatrix, myGraphics.projMatrix);
 }
 
 

@@ -5,3 +5,6 @@
 #pragma once
 
 #define NB_THREAD 8
+#define SPEED 1.f
+
+extern bool *keyStatus;

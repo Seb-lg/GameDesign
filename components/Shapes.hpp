@@ -44,16 +44,13 @@ protected:
 
 class GraphicalObject : public Shapes {
 public:
-	GraphicalObject(std::string data, glm::vec3 trans, glm::mat4 rot, glm::vec3 scale);
+	GraphicalObject(std::string data);
 
 	GraphicalObject() = default;
 
 	~GraphicalObject() = default;
 
 public:
-	glm::vec3 trans;
-	glm::mat4 rot;
-	glm::vec3 scale;
 };
 
 class Cube : public Shapes {

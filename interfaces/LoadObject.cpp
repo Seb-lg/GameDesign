@@ -5,7 +5,7 @@
 #include "Entity.hpp"
 #include "Ecs.hpp"
 #include "LoadObject.hpp"
-#include "Shapes.hpp"
+#include "components/Shapes.hpp"
 #include "SceneTree.hpp"
 
 #include <fstream>
@@ -34,7 +34,8 @@ f 7 8 4
 f 1 4 8)";
 
 	ID id = Entity::getId();
-	Ecs::get().addComponent<GraphicalObject>(id, rawData, trans, rot, scale);
+	Ecs::get().addComponent<GraphicalObject>(id, rawData);
+	Ecs::get().addComponent<Position3D>(id, trans, rot, scale);
 
 	SceneTree::addSceneNode(id, parent);
 	return id;
@@ -538,7 +539,8 @@ f 83/108/100 82/114/100 90/11/100
 )";
 
 	ID id = Entity::getId();
-	Ecs::get().addComponent<GraphicalObject>(id, rawData, trans, rot, scale);
+	Ecs::get().addComponent<GraphicalObject>(id, rawData);
+	Ecs::get().addComponent<Position3D>(id, trans, rot, scale);
 
 	SceneTree::addSceneNode(id, parent);
 	return id;
@@ -668,7 +670,8 @@ f 40 16 32
 )";
 
 	ID id = Entity::getId();
-	Ecs::get().addComponent<GraphicalObject>(id, rawData, trans, rot, scale);
+	Ecs::get().addComponent<GraphicalObject>(id, rawData);
+	Ecs::get().addComponent<Position3D>(id, trans, rot, scale);
 
 	SceneTree::addSceneNode(id, parent);
 	return id;
@@ -792,7 +795,8 @@ f 3/38/12 7/25/12 15/27/12
 )";
 
 	ID id = Entity::getId();
-	Ecs::get().addComponent<GraphicalObject>(id, rawData, trans, rot, scale);
+	Ecs::get().addComponent<GraphicalObject>(id, rawData);
+	Ecs::get().addComponent<Position3D>(id, trans, rot, scale);
 
 	SceneTree::addSceneNode(id, parent);
 	return id;
@@ -839,7 +843,8 @@ f 6/9/4 2/14/4 1/10/4
 )";
 
 	ID id = Entity::getId();
-	Ecs::get().addComponent<GraphicalObject>(id, rawData, trans, rot, scale);
+	Ecs::get().addComponent<GraphicalObject>(id, rawData);
+	Ecs::get().addComponent<Position3D>(id, trans, rot, scale);
 
 	SceneTree::addSceneNode(id, parent);
 	return id;
@@ -851,7 +856,8 @@ ID LoadObject::FromSource(std::string path, glm::vec3 trans, glm::mat4 rot, glm:
 			    std::istreambuf_iterator<char>());
 
 	ID id = Entity::getId();
-	Ecs::get().addComponent<GraphicalObject>(id, rawData, trans, rot, scale);
+	Ecs::get().addComponent<GraphicalObject>(id, rawData);
+	Ecs::get().addComponent<Position3D>(id, trans, rot, scale);
 
 	SceneTree::addSceneNode(id, parent);
 	return id;
