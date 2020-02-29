@@ -32,7 +32,6 @@ void Movement::fromKeys(ID id, std::vector<int> keys) {
 
 	/// Forward
 	keyb.keys[keys[0]] = [&ecs, id, keys](bool down){
-//		std::cout << down << " " << keyStatus[keys[2]] << std::endl;
 		auto &speed = ecs.getComponentMap<Speed3D>()[id];
 		if (!down || keyStatus[keys[2]]) {
 			if (!keyStatus[keys[2]])
@@ -40,12 +39,10 @@ void Movement::fromKeys(ID id, std::vector<int> keys) {
 			return;
 		}
 		speed.direction.x = 1;
-//		std::cout << "ALORS LA PETIT CON !" << std::endl;
 	};
 
 	/// Left
 	keyb.keys[keys[1]] = [&ecs, id, keys](bool down){
-//		std::cout << down << " " << keyStatus[keys[3]] << std::endl;
 		auto &speed = ecs.getComponentMap<Speed3D>()[id];
 		if (!down || keyStatus[keys[3]]) {
 			if (!keyStatus[keys[3]]) {
@@ -53,13 +50,11 @@ void Movement::fromKeys(ID id, std::vector<int> keys) {
 			}
 			return;
 		}
-		speed.direction.z = 1;
-//		std::cout << "ALORS LA PETIT CON !" << std::endl;
+		speed.direction.z = -1;
 	};
 
 	/// Backward
 	keyb.keys[keys[2]] = [&ecs, id, keys](bool down){
-//		std::cout << down << " " << keyStatus[keys[0]] << std::endl;
 		auto &speed = ecs.getComponentMap<Speed3D>()[id];
 		if (!down || keyStatus[keys[0]]) {
 			if (!keyStatus[keys[0]]) {
@@ -68,12 +63,10 @@ void Movement::fromKeys(ID id, std::vector<int> keys) {
 			return;
 		}
 		speed.direction.x = -1;
-//		std::cout << "ALORS LA PETIT CON !" << std::endl;
 	};
 
 	/// Right
 	keyb.keys[keys[3]] = [&ecs, id, keys](bool down){
-//		std::cout << down << " " << keyStatus[keys[1]] << std::endl;
 		auto &speed = ecs.getComponentMap<Speed3D>()[id];
 		if (!down || keyStatus[keys[1]]) {
 			if (!keyStatus[keys[1]]) {
@@ -81,7 +74,6 @@ void Movement::fromKeys(ID id, std::vector<int> keys) {
 			}
 			return;
 		}
-		speed.direction.z = -1;
-//		std::cout << "ALORS LA PETIT CON !" << std::endl;
+		speed.direction.z = 1;
 	};
 }

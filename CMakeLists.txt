@@ -42,16 +42,14 @@ add_executable(GameDesign
 
         component/pathfinding.cpp
         component/pathfinding.hpp
-        component/rigidbody.cpp
-        component/rigidbody.hpp
-        
+
         Graphics.cpp
         Graphics.hpp
         Source.cpp
         interfaces/LoadObject.cpp
         interfaces/LoadObject.hpp
         Config.hpp
-        interfaces/Movement.cpp interfaces/Movement.hpp components/Speed3D.cpp components/Speed3D.hpp components/Keyboard.cpp components/Keyboard.hpp)
+        interfaces/Movement.cpp interfaces/Movement.hpp components/Speed3D.cpp components/Speed3D.hpp components/Keyboard.cpp components/Keyboard.hpp components/Hitbox.cpp components/Hitbox.hpp)
 
 add_executable(GameTest
         test/MainTest.cpp

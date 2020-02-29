@@ -44,9 +44,9 @@ struct Particle {
 
 class ParticleEmitter {
 public:
-	ParticleEmitter(GLuint size = 10000);
+	ParticleEmitter(GLuint size = 10000, bool autoEmit = true);
 
-	void update(glm::mat4 viewMatrix, glm::mat4 projMatrix);
+	void update(glm::mat4 viewMatrix, glm::mat4 projMatrix, glm::vec3 pos);
 	void loadShaders(std::string vertex, std::string fragment);
 	GLuint loadTexture(const char * imagepath);
 	int FindUnusedParticle();
@@ -69,6 +69,7 @@ private:
 	GLuint particles_position_buffer;
 	GLuint particles_color_buffer;
 
+	bool autoEmit;
 	std::vector<Particle> particles;
 	GLfloat* particulePositionData;
 	GLubyte* particuleColorData;

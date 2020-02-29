@@ -35,19 +35,27 @@ using namespace std;
 #include <interfaces/Movement.hpp>
 #include <components/Speed3D.hpp>
 #include <components/Keyboard.hpp>
+#include <components/Hitbox.hpp>
 #include "Graphics.hpp"
 #include "components/Shapes.hpp"
 #include "components/Particle.hpp"
 
 // MAIN FUNCTIONS
 void startup();
+
 void updateCamera();
+
 void renderScene();
+
 // CALLBACK FUNCTIONS
 void onResizeCallback(GLFWwindow *window, int w, int h);
+
 void onKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
+
 void onMouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
+
 void onMouseMoveCallback(GLFWwindow *window, double x, double y);
+
 void onMouseWheelCallback(GLFWwindow *window, double xoffset, double yoffset);
 
 // VARIABLES
@@ -58,19 +66,29 @@ bool mouseEnabled = true; // keep track of mouse toggle.
 
 // MAIN GRAPHICS OBJECT
 Graphics myGraphics;
-ParticleEmitter *emit;
+//ParticleEmitter *emit;
 
 // Some global variable to do the animation.
 float t = 0.001f;
-int main(int argc, char* argv[]) {
+
+int main(int argc, char *argv[]) {
 	keyStatus = new bool[1024];
 	if (myGraphics.Init()) return 0;
 	Ecs &ecs = Ecs::get();
 	startup();
 
-	emit = new ParticleEmitter();
-	ID id = LoadObject::Cube({0.f, 0.5f, 2.f});
+//	emit = new ParticleEmitter();
+	ID id = LoadObject::Cube({0.f, 0.5f, 0.f});
 	Movement::WASD(id);
+	ecs.addComponent<Hitbox>(id, ecs.getComponentMap<GraphicalObject>()[id].obj_vertices);
+
+	ID od = LoadObject::Cube({7.f, 0.5f, 7.f});
+	ecs.addComponent<Hitbox>(od, ecs.getComponentMap<GraphicalObject>()[od].obj_vertices);
+
+	ID part = Entity::getId();
+	ecs.addComponent<ParticleEmitter>(part, 200);
+	ecs.addComponent<Position3D>(part, glm::vec3({0.f, 0.5f, 0.f}));
+	SceneTree::addSceneNode(part, id);
 
 	while (glfwWindowShouldClose(myGraphics.window) != GL_TRUE) {
 		ecs.update();
@@ -101,23 +119,50 @@ void startup() {
 	ecs.addUpdate(12, [&]() {
 		auto &ecs = Ecs::get();
 		auto &speeds = ecs.getComponentMap<Speed3D>();
-		auto &positions = ecs.getComponentMap<Position3D>();
+		auto &poss = ecs.getComponentMap<Position3D>();
+		auto &box = ecs.getComponentMap<Hitbox>();
 		auto ids = ecs.filter<Speed3D, Position3D>();
+		auto boxids = ecs.filter<Hitbox, Speed3D,  Position3D>();
+		auto boxidalls = ecs.filter<Hitbox, Position3D>();
+
+		for (auto &mov : boxids) {
+			for(auto &st : boxidalls) {
+				if (mov == st)
+					continue;
+
+				//TODO: upadte the new speed and ad it to the pending position otherwise it works
+				if (poss[mov].trans.x + box[mov].minX > poss[st].trans.x + box[st].maxX)
+					continue;
+
+				if (poss[mov].trans.x + box[mov].maxX < poss[st].trans.x + box[st].minX)
+					continue;
+				speeds[mov].direction.x = 0;
+
+				if (poss[mov].trans.z + box[mov].minZ > poss[st].trans.z + box[st].maxZ)
+					continue;
+
+				if (poss[mov].trans.z + box[mov].maxZ < poss[st].trans.z + box[st].minZ)
+					continue;
+				speeds[mov].direction.z = 0;
+
+				std::cout << "ca touche" << std::endl;
+
+			}
+		}
 
 		for (const auto &id: ids) {
 			auto &dir = speeds[id].direction;
 			auto &speed = speeds[id].speed;
-			auto &pos = positions[id].trans;
+			auto &pos = poss[id].trans;
 			float total = abs(dir.x) + abs(dir.y) + abs(dir.z);
 
 			if (total == 0.f) {
 				return;
 			}
 
-			std::cout << total << std::endl;
-			pos.x += (dir.x == 0.f? 0.f: speed * deltaTime * (total /dir.x));
-			pos.y += (dir.y == 0.f? 0.f: speed * deltaTime * (total /dir.y));
-			pos.z += (dir.z == 0.f? 0.f: speed * deltaTime * (total /dir.z));
+			pos.x += (dir.x == 0.f ? 0.f : speed * deltaTime * (total / dir.x));
+			pos.y += (dir.y == 0.f ? 0.f : speed * deltaTime * (total / dir.y));
+			pos.z += (dir.z == 0.f ? 0.f : speed * deltaTime * (total / dir.z));
 		}
 	});
 	ecs.addUpdate(21, []() { renderScene(); });
@@ -133,7 +178,16 @@ void startup() {
 		}
 	});
 	ecs.addUpdate(23, [&]() {
-		emit->update(myGraphics.viewMatrix, myGraphics.projMatrix);
+		auto &ecs = Ecs::get();
+		auto &positions = ecs.getComponentMap<Position3D>();
+		auto &particles = ecs.getComponentMap<ParticleEmitter>();
+		auto ids = ecs.filter<ParticleEmitter, Position3D>();
+
+		for (auto &id : ids) {
+			particles[id].update(myGraphics.viewMatrix, myGraphics.projMatrix, positions[id].worldTrans);
+		}
+
+//		emit->update(myGraphics.viewMatrix, myGraphics.projMatrix, glm::vec3());
 	});
 	ecs.addUpdate(31, []() { glfwSwapBuffers(myGraphics.window); });
 
@@ -152,7 +206,7 @@ void startup() {
 	myGraphics.aspect = (float) myGraphics.windowWidth / (float) myGraphics.windowHeight;
 	myGraphics.projMatrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
 
-	ID myFloor = LoadObject::Cube(glm::vec3(0.0f, 0.0f, 0.0f), DEFAULTROT, glm::vec3(1000.0f, 0.001f, 1000.0f));
+	ID myFloor = LoadObject::Cube(glm::vec3(7.5f, 0.0f, 7.5f), DEFAULTROT, glm::vec3(14.0f, 0.001f, 14.0f));
 	obj[myFloor].fillColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);
 	obj[myFloor].lineColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);
 
@@ -191,7 +245,7 @@ void updateCamera() {
 	deltaTime = glfwGetTime() - lastTime;
 	lastTime = glfwGetTime();
 	GLfloat cameraSpeed = 3.1f * deltaTime;
-	if (keyStatus[GLFW_KEY_W]) myGraphics.cameraPosition += cameraSpeed * myGraphics.cameraFront;
+	/*if (keyStatus[GLFW_KEY_W]) myGraphics.cameraPosition += cameraSpeed * myGraphics.cameraFront;
 	if (keyStatus[GLFW_KEY_S]) myGraphics.cameraPosition -= cameraSpeed * myGraphics.cameraFront;
 	if (keyStatus[GLFW_KEY_A])
 		myGraphics.cameraPosition -=
@@ -202,11 +256,11 @@ void updateCamera() {
 			glm::normalize(glm::cross(myGraphics.cameraFront, myGraphics.cameraUp)) *
 			cameraSpeed;
 	//up N down
-    if (keyStatus[GLFW_KEY_SPACE])
-        myGraphics.cameraPosition +=cameraSpeed * myGraphics.cameraUp;
-    if (keyStatus[GLFW_KEY_LEFT_CONTROL])
-        myGraphics.cameraPosition -=cameraSpeed * myGraphics.cameraUp;
-
+	if (keyStatus[GLFW_KEY_SPACE])
+		myGraphics.cameraPosition += cameraSpeed * myGraphics.cameraUp;
+	if (keyStatus[GLFW_KEY_LEFT_CONTROL])
+		myGraphics.cameraPosition -= cameraSpeed * myGraphics.cameraUp;
+*/
 	// IMPORTANT PART
 	// Calculate my view matrix using the lookAt helper function
 	if (mouseEnabled) {
@@ -217,7 +271,7 @@ void updateCamera() {
 	}
 }
 
-void recursion(glm::mat4 parent, std::unordered_map<ID, Position3D> &map, SceneTree& node){
+void recursion(glm::mat4 parent, std::unordered_map<ID, Position3D> &map, SceneTree &node) {
 	glm::mat4 mv_matrix =
 		parent *
 		glm::translate(map[node.id].trans) *
@@ -225,8 +279,7 @@ void recursion(glm::mat4 parent, std::unordered_map<ID, Position3D> &map, SceneT
 		glm::scale(map[node.id].scale) *
 		glm::mat4(1.0f);
 	map[node.id].mv_matrix = myGraphics.viewMatrix * mv_matrix;
-	/*map[node.id].proj_matrix = myGraphics.projMatrix;
-	map[node.id].Draw();*/
+	map[node.id].worldTrans = mv_matrix[3];
 
 	for (auto &elem : node.childs)
 		recursion(mv_matrix, map, elem);
@@ -254,7 +307,8 @@ void onResizeCallback(GLFWwindow *window, int w, int h) {    // call everytime t
 	myGraphics.projMatrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
 }
 
-void onKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) { // called everytime a key is pressed
+void
+onKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) { // called everytime a key is pressed
 	if (action == GLFW_PRESS) keyStatus[key] = true;
 	else if (action == GLFW_RELEASE) keyStatus[key] = false;
 

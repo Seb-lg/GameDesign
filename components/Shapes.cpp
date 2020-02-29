@@ -16,7 +16,7 @@ Shapes::~Shapes() {
 
 void Shapes::LoadObj() {
 
-	std::vector<glm::vec3> obj_vertices;
+//	std::vector<glm::vec3> obj_vertices;
 	std::vector<unsigned int> vertexIndices;
 	istringstream rawDataStream(rawData);
 	string dataLine;

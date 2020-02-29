@@ -19,4 +19,6 @@ public:
 	glm::vec3 trans;
 	glm::mat4 rot;
 	glm::vec3 scale;
+
+	glm::vec3 worldTrans;
 };

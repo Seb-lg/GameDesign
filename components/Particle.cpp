@@ -22,100 +22,7 @@
 #define FOURCC_DXT3 0x33545844 // Equivalent to "DXT3" in ASCII
 #define FOURCC_DXT5 0x35545844 // Equivalent to "DXT5" in ASCII
 
-GLuint loadDDS(const char * imagepath){
-
-	unsigned char header[124];
-
-	FILE *fp;
-
-	/* try to open the file */
-	fp = fopen(imagepath, "rb");
-	if (fp == NULL){
-		printf("%s could not be opened. Are you in the right directory ? Don't forget to read the FAQ !\n", imagepath); getchar();
-		return 0;
-	}
-
-	/* verify the type of file */
-	char filecode[4];
-	fread(filecode, 1, 4, fp);
-	if (strncmp(filecode, "DDS ", 4) != 0) {
-		fclose(fp);
-		return 0;
-	}
-
-	/* get the surface desc */
-	fread(&header, 124, 1, fp);
-
-	unsigned int height      = *(unsigned int*)&(header[8 ]);
-	unsigned int width	     = *(unsigned int*)&(header[12]);
-	unsigned int linearSize	 = *(unsigned int*)&(header[16]);
-	unsigned int mipMapCount = *(unsigned int*)&(header[24]);
-	unsigned int fourCC      = *(unsigned int*)&(header[80]);
-
-
-	unsigned char * buffer;
-	unsigned int bufsize;
-	/* how big is it going to be including all mipmaps? */
-	bufsize = mipMapCount > 1 ? linearSize * 2 : linearSize;
-	buffer = (unsigned char*)malloc(bufsize * sizeof(unsigned char));
-	fread(buffer, 1, bufsize, fp);
-	/* close the file pointer */
-	fclose(fp);
-
-	unsigned int components  = (fourCC == FOURCC_DXT1) ? 3 : 4;
-	unsigned int format;
-	switch(fourCC)
-	{
-		case FOURCC_DXT1:
-			format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-			break;
-		case FOURCC_DXT3:
-			format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-			break;
-		case FOURCC_DXT5:
-			format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-			break;
-		default:
-			free(buffer);
-			return 0;
-	}
-
-	// Create one OpenGL texture
-	GLuint textureID;
-	glGenTextures(1, &textureID);
-
-	// "Bind" the newly created texture : all future texture functions will modify this texture
-	glBindTexture(GL_TEXTURE_2D, textureID);
-	glPixelStorei(GL_UNPACK_ALIGNMENT,1);
-
-	unsigned int blockSize = (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) ? 8 : 16;
-	unsigned int offset = 0;
-
-	/* load the mipmaps */
-	for (unsigned int level = 0; level < mipMapCount && (width || height); ++level)
-	{
-		unsigned int size = ((width+3)/4)*((height+3)/4)*blockSize;
-		glCompressedTexImage2D(GL_TEXTURE_2D, level, format, width, height,
-				       0, size, buffer + offset);
-
-		offset += size;
-		width  /= 2;
-		height /= 2;
-
-		// Deal with Non-Power-Of-Two textures. This code is not included in the webpage to reduce clutter.
-		if(width < 1) width = 1;
-		if(height < 1) height = 1;
-
-	}
-
-	free(buffer);
-
-	return textureID;
-
-
-}
-
-ParticleEmitter::ParticleEmitter(GLuint size) : size(size) {
+ParticleEmitter::ParticleEmitter(GLuint size, bool autoEmit) : size(size), autoEmit(autoEmit) {
 	lastTimes = glfwGetTime();
 	loadShaders( "assets/Particle.vertexshader", "assets/Particle.fragmentshader" );
 	glGenVertexArrays(1, &VertexArrayID);
@@ -125,7 +32,7 @@ ParticleEmitter::ParticleEmitter(GLuint size) : size(size) {
 	CameraUp_worldspace_ID  = glGetUniformLocation(program, "CameraUp_worldspace");
 	ViewProjMatrixID = glGetUniformLocation(program, "VP");
 
-	textureID  = glGetUniformLocation(program, "myTextureSampler");
+	textureID  = glGetUniformLocation(program, "sampleTexture");
 
 
 	this->particulePositionData	= new GLfloat[this->size * 4];
@@ -136,8 +43,7 @@ ParticleEmitter::ParticleEmitter(GLuint size) : size(size) {
 		this->particles.emplace_back();
 
 	glUseProgram(program);
-//	texture = loadTexture("assets/oui32.bmp");
-	texture = loadDDS("assets/particle.DDS");
+	texture = loadTexture("assets/dollarwhite.bmp");
 	glGenBuffers(1, &billboard_vertex_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, billboard_vertex_buffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
@@ -162,7 +68,7 @@ ParticleEmitter::ParticleEmitter(GLuint size) : size(size) {
 
 }
 
-void ParticleEmitter::update(glm::mat4 viewMatrix, glm::mat4 projMatrix) {
+void ParticleEmitter::update(glm::mat4 viewMatrix, glm::mat4 projMatrix, glm::vec3 pos) {
 	double currentTime = glfwGetTime();
 	double delta = currentTime - lastTimes;
 	lastTimes = currentTime;
@@ -176,119 +82,39 @@ void ParticleEmitter::update(glm::mat4 viewMatrix, glm::mat4 projMatrix) {
 	glm::mat4 ViewProjectionMatrix = projMatrix * viewMatrix;
 	glm::vec3 CameraPosition(glm::inverse(viewMatrix)[3]);
 
-	int newparticles = (int)(delta*(float)size);
-	if (newparticles > (int)(0.016f*(float)size))
-		newparticles = (int)(0.016f*(float)size);
+	if (autoEmit) {
+		int newparticles = (int)(delta*(float)size);
+		if (newparticles > (int)(0.016f*(float)size))
+			newparticles = (int)(0.016f*(float)size);
 
-	int particleIndex = FindUnusedParticle();
-	for(int i=0; i<newparticles && particleIndex != -1; i++){
-		particleIndex = FindUnusedParticle();
-		particles[particleIndex].life = rand() % 7; // This particle will live 5 seconds.
-		particles[particleIndex].pos = glm::vec3(0.f,0.f,0.0f);
+		int particleIndex = FindUnusedParticle();
+		for(int i=0; i<newparticles && particleIndex != -1; i++){
+			particleIndex = FindUnusedParticle();
+			particles[particleIndex].life = rand() % 7; // This particle will live 5 seconds.
+			particles[particleIndex].pos = pos;
 
-		float spread = 1.5f;
-		glm::vec3 maindir = glm::vec3(0.0f, 10.0f, 0.0f);
-		glm::vec3 randomdir = glm::vec3(
-			(rand()%2000 - 1000.0f)/1000.0f,
-			(rand()%2000 - 1000.0f)/1000.0f,
-			(rand()%2000 - 1000.0f)/1000.0f
-		);
+			float spread = 1.5f;
+			glm::vec3 maindir = glm::vec3(0.0f, 10.0f, 0.0f);
+			glm::vec3 randomdir = glm::vec3(
+				(rand()%2000 - 1000.0f)/1000.0f,
+				(rand()%2000 - 1000.0f)/1000.0f,
+				(rand()%2000 - 1000.0f)/1000.0f
+			);
 
-		particles[particleIndex].speed = maindir + randomdir*spread;
+			particles[particleIndex].speed = maindir + randomdir*spread;
 
-		// Very bad way to generate a random color
-		particles[particleIndex].r = rand() % 256;
-		particles[particleIndex].g = rand() % 256;
-		particles[particleIndex].b = rand() % 256;
-		particles[particleIndex].a = (rand() % 256) / 3;
+			// Very bad way to generate a random color
+			particles[particleIndex].r = 133;//rand() % 256;
+			particles[particleIndex].g = 187;//rand() % 256;
+			particles[particleIndex].b = 101;//rand() % 256;
+			particles[particleIndex].a = 255;//(rand() % 256) / 3;
 
-		particles[particleIndex].size = (rand()%1000)/2000.0f + 0.1f;
+			particles[particleIndex].size = (rand()%1000)/2000.0f + 0.1f;
 
-	}
-	int ParticlesCount = 0;
-
-	/*std::vector<std::thread> pool;
-	std::list<int> poolRet;
-	int spart = size / NB_THREAD;
-	auto it = particles.begin();
-	int particle = 0;
-	for (int i = 0; i < NB_THREAD - 1; ++i) {
-		poolRet.push_back(0);
-		int &ret = poolRet.back();
-		auto end = std::next(it, spart);
-		pool.emplace_back([this, &ret, it, end, delta, CameraPosition, particle]() mutable {
-			for (it; it != end; ++it) {
-				if(it->life > 0.0f){
-
-					// Decrease life
-					it->life -= delta;
-					if (it->life > 0.0f){
-
-						it->speed += glm::vec3(0.0f,-9.81f, 0.0f) * (float)delta * 0.5f;
-						it->pos += it->speed * (float)delta;
-						it->cameradistance = glm::length2( it->pos - CameraPosition );
-
-						particulePositionData[4*particle+0] = it->pos.x;
-						particulePositionData[4*particle+1] = it->pos.y;
-						particulePositionData[4*particle+2] = it->pos.z;
-
-						particulePositionData[4*particle+3] = it->size;
-
-						particuleColorData[4*particle+0] = it->r;
-						particuleColorData[4*particle+1] = it->g;
-						particuleColorData[4*particle+2] = it->b;
-						particuleColorData[4*particle+3] = it->a;
-
-					} else {
-						it->cameradistance = - 1.0f;
-					}
-					ret++;
-				}
-			}
-			++particle;
-		});
-		particle += spart;
-	}
-	poolRet.push_back(0);
-	int &ret = poolRet.back();
-	auto end = particles.end();
-	pool.emplace_back([this, &ret, it, end, delta, CameraPosition, particle]() mutable {
-		for (it; it != end; ++it) {
-			if(it->life > 0.0f){
-
-				// Decrease life
-				it->life -= delta;
-				if (it->life > 0.0f){
-
-					it->speed += glm::vec3(0.0f,-9.81f, 0.0f) * (float)delta * 0.5f;
-					it->pos += it->speed * (float)delta;
-					it->cameradistance = glm::length2( it->pos - CameraPosition );
-
-					particulePositionData[4*particle+0] = it->pos.x;
-					particulePositionData[4*particle+1] = it->pos.y;
-					particulePositionData[4*particle+2] = it->pos.z;
-
-					particulePositionData[4*particle+3] = it->size;
-
-					particuleColorData[4*particle+0] = it->r;
-					particuleColorData[4*particle+1] = it->g;
-					particuleColorData[4*particle+2] = it->b;
-					particuleColorData[4*particle+3] = it->a;
-
-				} else {
-					it->cameradistance = - 1.0f;
-				}
-				ret++;
-			}
 		}
-		++particle;
-	});
-	for (auto &elem : pool)
-		elem.join();
+	}
 
-	for (auto elem : poolRet)
-		ParticlesCount += elem;*/
-
+	int ParticlesCount = 0;
 	for(int i=0; i<size; i++){
 
 		Particle& p = particles[i]; // shortcut
@@ -333,15 +159,12 @@ void ParticleEmitter::update(glm::mat4 viewMatrix, glm::mat4 projMatrix) {
 	glBufferData(GL_ARRAY_BUFFER, size * 4 * sizeof(GLubyte), NULL, GL_STREAM_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, ParticlesCount * sizeof(GLubyte) * 4, particuleColorData);
 
-
-//	glEnable(GL_BLEND);
-//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	glUseProgram(program);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
-	GLuint TextureID  = glGetUniformLocation(program, "myTextureSampler");
+	GLuint TextureID  = glGetUniformLocation(program, "sampleTexture");
 	glUniform1i(TextureID, 0);
 
 	glUniform3f(CameraRight_worldspace_ID, viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);

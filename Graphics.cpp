@@ -74,7 +74,7 @@ void ErrorCallbackGLFW(int error, const char *description) {
 
 void Graphics::endProgram() {
 	glfwMakeContextCurrent(window);                // destroys window handler
-	glfwTerminate();        // destroys all windows and releases resources.
+ 	glfwTerminate();        // destroys all windows and releases resources.
 }
 
 void Graphics::SetupRender() {
