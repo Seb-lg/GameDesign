@@ -52,8 +52,8 @@ int Graphics::Init() {
 		return 1;
 	}
 
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);        // Set mouse cursor FPS.
-
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
 
 	return 0;
@@ -74,7 +74,7 @@ void ErrorCallbackGLFW(int error, const char *description) {
 
 void Graphics::endProgram() {
 	glfwMakeContextCurrent(window);                // destroys window handler
-	glfwTerminate();        // destroys all windows and releases resources.
+ 	glfwTerminate();        // destroys all windows and releases resources.
 }
 
 void Graphics::SetupRender() {

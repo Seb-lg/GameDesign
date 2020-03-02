@@ -33,32 +33,23 @@ add_executable(GameDesign
         ecs/SceneTree.hpp
         ecs/SceneTree.cpp
 
-#        particle/CubeEmitter.cpp
-#        particle/ParticleEffect.cpp
-#        particle/Particle.hpp
-#        particle/Random.hpp
-#        particle/CubeEmitter.hpp
-#        particle/ParticleEffect.hpp
-#        particle/ParticleSystemPCH.cpp
-#        particle/SphereEmitter.cpp
-#        particle/ParticleEmitter.hpp
-#        particle/ParticleSystemPCH.hpp
-#        particle/SphereEmitter.hpp
-#        particle/Interpolator.hpp
+        components/Position3D.cpp
+        components/Position3D.hpp
+        components/Shapes.cpp
+        components/Shapes.hpp
+        components/Particle.cpp
+        components/Particle.hpp
 
-
-        Particle.cpp
-        Particle.hpp
+        component/pathfinding.cpp
+        component/pathfinding.hpp
 
         Graphics.cpp
         Graphics.hpp
-        Shapes.cpp
-        Source.cpp LoadObject.cpp LoadObject.hpp ecs/SceneTree.hpp ecs/SceneTree.cpp component/pathfinding.cpp component/pathfinding.hpp component/rigidbody.cpp component/rigidbody.hpp
-        Shapes.hpp
         Source.cpp
-        LoadObject.cpp
-        LoadObject.hpp
-        Config.hpp)
+        interfaces/LoadObject.cpp
+        interfaces/LoadObject.hpp
+        Config.hpp
+        interfaces/Movement.cpp interfaces/Movement.hpp components/Speed3D.cpp components/Speed3D.hpp components/Keyboard.cpp components/Keyboard.hpp components/Hitbox.cpp components/Hitbox.hpp)
 
 add_executable(GameTest
         test/MainTest.cpp
