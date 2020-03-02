@@ -13,5 +13,6 @@ public:
 
 public:
 	glm::vec3 direction;
+	glm::vec3 sped;
 	float speed;
 };

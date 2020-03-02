@@ -5,7 +5,7 @@
 #include <iostream>
 #include "Hitbox.hpp"
 
-Hitbox::Hitbox(std::vector<glm::vec3> vertexs) {
+Hitbox::Hitbox(std::vector<glm::vec3> vertexs, glm::vec3 scale) {
 	maxX = minX = maxY = minY = maxZ = minZ = 0.f;
 
 	for (auto &elem : vertexs) {
@@ -24,4 +24,11 @@ Hitbox::Hitbox(std::vector<glm::vec3> vertexs) {
 		if (minZ > elem.z)
 			minZ = elem.z;
 	}
+
+	maxX *= scale.x;
+	minX *= scale.x;
+	maxY *= scale.y;
+	minY *= scale.y;
+	maxZ *= scale.z;
+	minZ *= scale.z;
 }

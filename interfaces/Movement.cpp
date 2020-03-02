@@ -36,9 +36,17 @@ void Movement::fromKeys(ID id, std::vector<int> keys) {
 		if (!down || keyStatus[keys[2]]) {
 			if (!keyStatus[keys[2]])
 				speed.direction.x = 0;
+			auto total = abs(speed.direction.x) + abs(speed.direction.y) + abs(speed.direction.z);
+			speed.sped.x = (total == 0.f ? 0.f : ((speed.direction.x * speed.speed * deltaTime) / total));
+			speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
+			speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
 			return;
 		}
 		speed.direction.x = 1;
+		auto total = abs(speed.direction.x) + abs(speed.direction.y) + abs(speed.direction.z);
+		speed.sped.x = (total == 0.f ? 0.f : ((speed.direction.x * speed.speed * deltaTime) / total));
+		speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
+		speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
 	};
 
 	/// Left
@@ -48,9 +56,17 @@ void Movement::fromKeys(ID id, std::vector<int> keys) {
 			if (!keyStatus[keys[3]]) {
 				speed.direction.z= 0;
 			}
+			auto total = abs(speed.direction.x) + abs(speed.direction.y) + abs(speed.direction.z);
+			speed.sped.x = (total == 0.f ? 0.f : ((speed.direction.x * speed.speed * deltaTime) / total));
+			speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
+			speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
 			return;
 		}
 		speed.direction.z = -1;
+		auto total = abs(speed.direction.x) + abs(speed.direction.y) + abs(speed.direction.z);
+		speed.sped.x = (total == 0.f ? 0.f : ((speed.direction.x * speed.speed * deltaTime) / total));
+		speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
+		speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
 	};
 
 	/// Backward
@@ -60,9 +76,17 @@ void Movement::fromKeys(ID id, std::vector<int> keys) {
 			if (!keyStatus[keys[0]]) {
 				speed.direction.x = 0;
 			}
+			auto total = abs(speed.direction.x) + abs(speed.direction.y) + abs(speed.direction.z);
+			speed.sped.x = (total == 0.f ? 0.f : ((speed.direction.x * speed.speed * deltaTime) / total));
+			speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
+			speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
 			return;
 		}
 		speed.direction.x = -1;
+		auto total = abs(speed.direction.x) + abs(speed.direction.y) + abs(speed.direction.z);
+		speed.sped.x = (total == 0.f ? 0.f : ((speed.direction.x * speed.speed * deltaTime) / total));
+		speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
+		speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
 	};
 
 	/// Right
@@ -72,8 +96,16 @@ void Movement::fromKeys(ID id, std::vector<int> keys) {
 			if (!keyStatus[keys[1]]) {
 				speed.direction.z = 0;
 			}
+			auto total = abs(speed.direction.x) + abs(speed.direction.y) + abs(speed.direction.z);
+			speed.sped.x = (total == 0.f ? 0.f : ((speed.direction.x * speed.speed * deltaTime) / total));
+			speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
+			speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
 			return;
 		}
 		speed.direction.z = 1;
+		auto total = abs(speed.direction.x) + abs(speed.direction.y) + abs(speed.direction.z);
+		speed.sped.x = (total == 0.f ? 0.f : ((speed.direction.x * speed.speed * deltaTime) / total));
+		speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
+		speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
 	};
 }

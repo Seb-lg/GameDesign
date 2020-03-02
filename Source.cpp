@@ -130,39 +130,38 @@ void startup() {
 				if (mov == st)
 					continue;
 
-				//TODO: upadte the new speed and ad it to the pending position otherwise it works
-				if (poss[mov].trans.x + box[mov].minX > poss[st].trans.x + box[st].maxX)
+				if (poss[mov].trans.x + speeds[mov].sped.x + box[mov].minX > poss[st].trans.x + box[st].maxX)
 					continue;
 
-				if (poss[mov].trans.x + box[mov].maxX < poss[st].trans.x + box[st].minX)
-					continue;
-				speeds[mov].direction.x = 0;
-
-				if (poss[mov].trans.z + box[mov].minZ > poss[st].trans.z + box[st].maxZ)
+				if (poss[mov].trans.x + speeds[mov].sped.x + box[mov].maxX < poss[st].trans.x + box[st].minX)
 					continue;
 
-				if (poss[mov].trans.z + box[mov].maxZ < poss[st].trans.z + box[st].minZ)
+
+				if (poss[mov].trans.z + speeds[mov].sped.z + box[mov].minZ > poss[st].trans.z + box[st].maxZ)
 					continue;
-				speeds[mov].direction.z = 0;
 
-				std::cout << "ca touche" << std::endl;
+				if (poss[mov].trans.z + speeds[mov].sped.z + box[mov].maxZ < poss[st].trans.z + box[st].minZ)
+					continue;
 
+
+				if (poss[mov].trans.x + box[mov].minX > poss[st].trans.x + box[st].maxX ||
+					poss[mov].trans.x + box[mov].maxX < poss[st].trans.x + box[st].minX)
+					speeds[mov].sped.x = 0;
+
+				if (poss[mov].trans.z + box[mov].minZ > poss[st].trans.z + box[st].maxZ ||
+					poss[mov].trans.z + box[mov].maxZ < poss[st].trans.z + box[st].minZ)
+					speeds[mov].sped.z = 0;
 			}
 		}
 
 		for (const auto &id: ids) {
-			auto &dir = speeds[id].direction;
 			auto &speed = speeds[id].speed;
+			auto &sped = speeds[id].sped;
 			auto &pos = poss[id].trans;
-			float total = abs(dir.x) + abs(dir.y) + abs(dir.z);
 
-			if (total == 0.f) {
-				return;
-			}
-
-			pos.x += (dir.x == 0.f ? 0.f : speed * deltaTime * (total / dir.x));
-			pos.y += (dir.y == 0.f ? 0.f : speed * deltaTime * (total / dir.y));
-			pos.z += (dir.z == 0.f ? 0.f : speed * deltaTime * (total / dir.z));
+			pos.x += sped.x;
+			pos.y += sped.y;
+			pos.z += sped.z;
 		}
 	});
 	ecs.addUpdate(21, []() { renderScene(); });
