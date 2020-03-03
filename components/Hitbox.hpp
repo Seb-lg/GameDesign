@@ -6,11 +6,13 @@
 
 #include <vector>
 #include <glm/glm.hpp>
+#include <ecs/Entity.hpp>
 #include "Position3D.hpp"
 
 class Hitbox {
 public:
 	Hitbox() = default;
+	Hitbox(ID id);
 	Hitbox(std::vector<glm::vec3> vertexs, glm::vec3 scale = DEFAULTSCALE);
 	float maxX;
 	float minX;
