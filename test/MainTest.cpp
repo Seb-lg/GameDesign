@@ -22,6 +22,7 @@ using namespace glm;
 #include <shader.hpp>
 #include <texture.hpp>
 #include <controls.hpp>
+#include <pathfinding.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 
@@ -108,7 +109,7 @@ int main( void )
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 	// Hide the mouse and enable unlimited mouvement
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+//	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// Set the mouse at the center of the screen
 	glfwPollEvents();
@@ -121,6 +122,8 @@ int main( void )
 	glEnable(GL_DEPTH_TEST);
 	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
+
+	pathfinding::map();
 
 	/// Begin particle initialisation
 	GLuint VertexArrayID;
@@ -268,8 +271,8 @@ int main( void )
 		}
 
 		SortParticles();
-		std::cout << ParticlesContainer[0].pos.x << " " << ParticlesContainer[0].pos.y << " " << ParticlesContainer[0].pos.z << std::endl;
-		std::cout << ParticlesContainer[ParticlesCount].pos.x << " " << ParticlesContainer[ParticlesCount].pos.y << " " << ParticlesContainer[ParticlesCount].pos.z << std::endl << std::endl;
+//		std::cout << ParticlesContainer[0].pos.x << " " << ParticlesContainer[0].pos.y << " " << ParticlesContainer[0].pos.z << std::endl;
+//		std::cout << ParticlesContainer[ParticlesCount].pos.x << " " << ParticlesContainer[ParticlesCount].pos.y << " " << ParticlesContainer[ParticlesCount].pos.z << std::endl << std::endl;
 
 		glBindBuffer(GL_ARRAY_BUFFER, particles_position_buffer);
 		glBufferData(GL_ARRAY_BUFFER, MaxParticles * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW); // Buffer orphaning, a common way to improve streaming perf. See above link for details.

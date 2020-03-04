@@ -52,7 +52,7 @@ int Graphics::Init() {
 		return 1;
 	}
 
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+//	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
 
@@ -110,7 +110,7 @@ void Graphics::ClearViewport() {
 
 void Graphics::ToggleMouse() {
 	if (showingMouse) {
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);        // Set mouse cursor FPS.
+//		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);        // Set mouse cursor FPS.
 		cout << "Hidding Mouse..." << "\n";
 	} else {
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);                // Set mouse cursor normal

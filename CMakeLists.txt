@@ -40,8 +40,8 @@ add_executable(GameDesign
         components/Particle.cpp
         components/Particle.hpp
 
-        component/pathfinding.cpp
-        component/pathfinding.hpp
+        test/pathfinding.cpp
+        test/pathfinding.hpp
 
         Graphics.cpp
         Graphics.hpp
@@ -59,6 +59,8 @@ add_executable(GameTest
         test/texture.hpp
         test/shader.cpp
         test/shader.hpp
+        test/pathfinding.cpp
+        test/pathfinding.hpp
         )
 
 target_link_libraries(GameDesign ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARY} ${CMAKE_THREAD_LIBS_INIT} glfw GLEW)
