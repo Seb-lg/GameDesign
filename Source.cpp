@@ -36,6 +36,7 @@ using namespace std;
 #include <components/Speed3D.hpp>
 #include <components/Keyboard.hpp>
 #include <components/Hitbox.hpp>
+#include <components/Flock.hpp>
 #include "Graphics.hpp"
 #include "components/Shapes.hpp"
 #include "components/Particle.hpp"
@@ -81,6 +82,14 @@ int main(int argc, char *argv[]) {
 	ID id = LoadObject::Cube({0.f, 0.5f, 0.f});
 	Movement::WASD(id);
 	ecs.addComponent<Hitbox>(id, ecs.getComponentMap<GraphicalObject>()[id].obj_vertices);
+	ecs.addComponent<Flock>(id);
+	auto &oui = ecs.getComponentMap<Flock>()[id];
+	for (int i = 0; i < 10; ++i) {
+		auto non = LoadObject::Sphere(glm::vec3((float)(rand() % 100) / 10.f, 0.5f, (float)(rand() % 100) / 10.f));
+		ecs.addComponent<Speed3D>(non, glm::vec3(0.f, 0.f, 0.f), 5.f);
+		ecs.addComponent<Hitbox>(non, non);
+		oui.childs.push_back(non);
+	}
 
 	ID od = LoadObject::Cube({7.f, 0.5f, 7.f});
 	ecs.addComponent<Hitbox>(od, ecs.getComponentMap<GraphicalObject>()[od].obj_vertices);
@@ -101,9 +110,10 @@ int main(int argc, char *argv[]) {
 void startup() {
 	Ecs &ecs = Ecs::get();
 	auto &obj = ecs.getComponentMap<GraphicalObject>();
-	ecs.addUpdate(01, []() { updateCamera(); });
-	ecs.addUpdate(02, []() { glfwPollEvents(); });
-	ecs.addUpdate(10, [&]() {
+	int event = 0;
+	ecs.addUpdate(++event, []() { updateCamera(); });
+	ecs.addUpdate(++event, []() { glfwPollEvents(); });
+	ecs.addUpdate(++event, [&]() {
 		auto &ecs = Ecs::get();
 		auto &keybs = ecs.getComponentMap<Keyboard>();
 
@@ -115,8 +125,41 @@ void startup() {
 				}
 			}
 		}
-	});
-	ecs.addUpdate(12, [&]() {
+	}); ///Update Keyboard
+	ecs.addUpdate(++event, [](){
+		auto &ecs = Ecs::get();
+		auto &position = ecs.getComponentMap<Position3D>();
+		auto &speed = ecs.getComponentMap<Speed3D>();
+		auto &flocks = ecs.getComponentMap<Flock>();
+
+		for (auto &flock : flocks) {
+			auto &goal = position[flock.first];
+			for (auto const &id : flock.second.childs) {
+				speed[id].direction.x = goal.trans.x - position[id].trans.x;
+				speed[id].direction.z = goal.trans.z - position[id].trans.z;
+				auto total = abs(speed[id].direction.x) + abs(speed[id].direction.y) + abs(speed[id].direction.z);
+				speed[id].sped.x = (total == 0.f ? 0.f : ((speed[id].direction.x * speed[id].speed * deltaTime) / total));
+				speed[id].sped.y = (total == 0.f ? 0.f : ((speed[id].direction.y * speed[id].speed * deltaTime) / total));
+				speed[id].sped.z = (total == 0.f ? 0.f : ((speed[id].direction.z * speed[id].speed * deltaTime) / total));
+			}
+			for (auto id = flock.second.childs.begin(); id != flock.second.childs.end(); ++id) {
+				auto &pos1 = position[*id];
+				for (auto od = id; od != flock.second.childs.end(); ++od) {
+					if (*od == *id)
+						continue;
+					auto &pos2 = position[*od];
+					float dist = abs(pos2.trans.x - pos1.trans.x) + abs(pos2.trans.y - pos1.trans.y) + abs(pos2.trans.z - pos1.trans.z);
+					float repulsion = 0.5f * (1/exp(dist));
+
+					speed[*id].sped.x += repulsion / dist * abs(pos2.trans.x - pos1.trans.x);
+					speed[*id].sped.y += repulsion / dist * abs(pos2.trans.y - pos1.trans.y);
+					speed[*id].sped.z += repulsion / dist * abs(pos2.trans.z - pos1.trans.z);
+					std::cout << repulsion / dist * abs(pos2.trans.x - pos1.trans.x) << " " << repulsion / dist * abs(pos2.trans.y - pos1.trans.y) << " " << repulsion / dist * abs(pos2.trans.z - pos1.trans.z) << std::endl;
+				}
+			}
+		}
+	}); ///Update Flocks
+	ecs.addUpdate(++event, [&]() {
 		auto &ecs = Ecs::get();
 		auto &speeds = ecs.getComponentMap<Speed3D>();
 		auto &poss = ecs.getComponentMap<Position3D>();
@@ -163,9 +206,9 @@ void startup() {
 			pos.y += sped.y;
 			pos.z += sped.z;
 		}
-	});
-	ecs.addUpdate(21, []() { renderScene(); });
-	ecs.addUpdate(22, [&]() {
+	}); ///Update Speed and Hitbox
+	ecs.addUpdate(++event, []() { renderScene(); });
+	ecs.addUpdate(++event, [&]() {
 		auto &ecs = Ecs::get();
 		auto &positions = ecs.getComponentMap<Position3D>();
 		auto &graphicals = ecs.getComponentMap<GraphicalObject>();
@@ -175,8 +218,8 @@ void startup() {
 			graphical.second.proj_matrix = myGraphics.projMatrix;
 			graphical.second.Draw();
 		}
-	});
-	ecs.addUpdate(23, [&]() {
+	}); ///Draw GraphicalObjects
+	ecs.addUpdate(++event, [&]() {
 		auto &ecs = Ecs::get();
 		auto &positions = ecs.getComponentMap<Position3D>();
 		auto &particles = ecs.getComponentMap<ParticleEmitter>();
@@ -185,10 +228,8 @@ void startup() {
 		for (auto &id : ids) {
 			particles[id].update(myGraphics.viewMatrix, myGraphics.projMatrix, positions[id].worldTrans);
 		}
-
-//		emit->update(myGraphics.viewMatrix, myGraphics.projMatrix, glm::vec3());
-	});
-	ecs.addUpdate(31, []() { glfwSwapBuffers(myGraphics.window); });
+	}); ///Update and Draw Particles
+	ecs.addUpdate(++event, []() { glfwSwapBuffers(myGraphics.window); });
 
 	// Keep track of the running time
 	GLfloat currentTime = (GLfloat) glfwGetTime();
@@ -208,6 +249,8 @@ void startup() {
 	ID myFloor = LoadObject::Cube(glm::vec3(7.5f, 0.0f, 7.5f), DEFAULTROT, glm::vec3(14.0f, 0.001f, 14.0f));
 	obj[myFloor].fillColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);
 	obj[myFloor].lineColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);
+
+
 
 	// Optimised Graphics
 	myGraphics.SetOptimisations();        // Cull and depth testing

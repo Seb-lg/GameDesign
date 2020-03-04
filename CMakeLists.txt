@@ -49,7 +49,7 @@ add_executable(GameDesign
         interfaces/LoadObject.cpp
         interfaces/LoadObject.hpp
         Config.hpp
-        interfaces/Movement.cpp interfaces/Movement.hpp components/Speed3D.cpp components/Speed3D.hpp components/Keyboard.cpp components/Keyboard.hpp components/Hitbox.cpp components/Hitbox.hpp)
+        interfaces/Movement.cpp interfaces/Movement.hpp components/Speed3D.cpp components/Speed3D.hpp components/Keyboard.cpp components/Keyboard.hpp components/Hitbox.cpp components/Hitbox.hpp components/Flock.cpp components/Flock.hpp)
 
 add_executable(GameTest
         test/MainTest.cpp
