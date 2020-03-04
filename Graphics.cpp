@@ -52,7 +52,7 @@ int Graphics::Init() {
 		return 1;
 	}
 
-//	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
 

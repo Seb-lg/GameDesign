@@ -40,6 +40,7 @@ using namespace std;
 #include "Graphics.hpp"
 #include "components/Shapes.hpp"
 #include "components/Particle.hpp"
+//#include "components/pathfinding.hpp"
 
 // MAIN FUNCTIONS
 void startup();
@@ -77,15 +78,31 @@ int main(int argc, char *argv[]) {
 	if (myGraphics.Init()) return 0;
 	Ecs &ecs = Ecs::get();
 	startup();
+	auto &obj = ecs.getComponentMap<GraphicalObject>();
+
+
+//std::array<std::array<Node,12>,12> mapp = pathfinding::map();
+	int mapp[12][12];
+	for(int i=0;i<12;i++){
+		for(int j=0;j<12;j++){
+			int v2 = rand() % 100 + 1;
+			//if(mapp[i][j].walled){
+			if(v2>80||i==0||i==11||j==0||j==11){
+				ID od=LoadObject::Cube({i+2,0.5f,j+2});
+				ecs.addComponent<Hitbox>(od, ecs.getComponentMap<GraphicalObject>()[od].obj_vertices);
+				obj[od].fillColor = glm::vec4(0.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);
+			}
+		}
+	}
 
 //	emit = new ParticleEmitter();
-	ID id = LoadObject::Cube({0.f, 0.5f, 0.f});
+	ID id = LoadObject::Cube({10.f, 0.5f, 10.f});
 	Movement::WASD(id);
 	ecs.addComponent<Hitbox>(id, ecs.getComponentMap<GraphicalObject>()[id].obj_vertices);
 	ecs.addComponent<Flock>(id);
 	auto &oui = ecs.getComponentMap<Flock>()[id];
 	for (int i = 0; i < 10; ++i) {
-		auto non = LoadObject::Sphere(glm::vec3((float)(rand() % 100) / 10.f, 0.5f, (float)(rand() % 100) / 10.f));
+		auto non = LoadObject::Sphere(glm::vec3((float)(rand() % 100) / 10.f, 4.5f, (float)(rand() % 100) / 10.f));
 		ecs.addComponent<Speed3D>(non, glm::vec3(0.f, 0.f, 0.f), 5.f);
 		ecs.addComponent<Hitbox>(non, non);
 		oui.childs.push_back(non);
@@ -246,9 +263,10 @@ void startup() {
 	myGraphics.aspect = (float) myGraphics.windowWidth / (float) myGraphics.windowHeight;
 	myGraphics.projMatrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
 
-	ID myFloor = LoadObject::Cube(glm::vec3(7.5f, 0.0f, 7.5f), DEFAULTROT, glm::vec3(14.0f, 0.001f, 14.0f));
+	ID myFloor = LoadObject::Cube(glm::vec3(7.5f, 0.0f, 7.5f), DEFAULTROT, glm::vec3(12.0f, 0.001f, 12.0f));
 	obj[myFloor].fillColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);
 	obj[myFloor].lineColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);
+
 
 
 
@@ -287,7 +305,7 @@ void updateCamera() {
 	deltaTime = glfwGetTime() - lastTime;
 	lastTime = glfwGetTime();
 	GLfloat cameraSpeed = 3.1f * deltaTime;
-	/*if (keyStatus[GLFW_KEY_W]) myGraphics.cameraPosition += cameraSpeed * myGraphics.cameraFront;
+	if (keyStatus[GLFW_KEY_W]) myGraphics.cameraPosition += cameraSpeed * myGraphics.cameraFront;
 	if (keyStatus[GLFW_KEY_S]) myGraphics.cameraPosition -= cameraSpeed * myGraphics.cameraFront;
 	if (keyStatus[GLFW_KEY_A])
 		myGraphics.cameraPosition -=
@@ -302,7 +320,7 @@ void updateCamera() {
 		myGraphics.cameraPosition += cameraSpeed * myGraphics.cameraUp;
 	if (keyStatus[GLFW_KEY_LEFT_CONTROL])
 		myGraphics.cameraPosition -= cameraSpeed * myGraphics.cameraUp;
-*/
+
 	// IMPORTANT PART
 	// Calculate my view matrix using the lookAt helper function
 	if (mouseEnabled) {
