@@ -18,10 +18,6 @@
 #include <thread>
 #include <list>
 
-#define FOURCC_DXT1 0x31545844 // Equivalent to "DXT1" in ASCII
-#define FOURCC_DXT3 0x33545844 // Equivalent to "DXT3" in ASCII
-#define FOURCC_DXT5 0x35545844 // Equivalent to "DXT5" in ASCII
-
 ParticleEmitter::ParticleEmitter(GLuint size, bool autoEmit) : size(size), autoEmit(autoEmit) {
 	lastTimes = glfwGetTime();
 	loadShaders( "assets/Particle.vertexshader", "assets/Particle.fragmentshader" );
@@ -217,11 +213,9 @@ void ParticleEmitter::update(glm::mat4 viewMatrix, glm::mat4 projMatrix, glm::ve
 }
 
 void ParticleEmitter::loadShaders(std::string vertex, std::string fragment) {
-	// Create the shaders
 	GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 
-	// Read the Vertex Shader code from the file
 	std::string VertexShaderCode;
 	std::ifstream VertexShaderStream(vertex.c_str(), std::ios::in);
 	if(VertexShaderStream.is_open()){
@@ -230,12 +224,10 @@ void ParticleEmitter::loadShaders(std::string vertex, std::string fragment) {
 		VertexShaderCode = sstr.str();
 		VertexShaderStream.close();
 	}else{
-		printf("Impossible to open %s. Are you in the right directory ? Don't forget to read the FAQ !\n", vertex.c_str());
 		getchar();
 		return;
 	}
 
-	// Read the Fragment Shader code from the file
 	std::string FragmentShaderCode;
 	std::ifstream FragmentShaderStream(fragment.c_str(), std::ios::in);
 	if(FragmentShaderStream.is_open()){
@@ -248,58 +240,40 @@ void ParticleEmitter::loadShaders(std::string vertex, std::string fragment) {
 	GLint Result = GL_FALSE;
 	int InfoLogLength;
 
-
-	// Compile Vertex Shader
-	printf("Compiling shader : %s\n", vertex.c_str());
 	char const * VertexSourcePointer = VertexShaderCode.c_str();
 	glShaderSource(VertexShaderID, 1, &VertexSourcePointer , NULL);
 	glCompileShader(VertexShaderID);
 
-	// Check Vertex Shader
 	glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
 	glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 	if ( InfoLogLength > 0 ){
 		std::vector<char> VertexShaderErrorMessage(InfoLogLength+1);
 		glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
-		printf("%s\n", &VertexShaderErrorMessage[0]);
 	}
 
-
-
-	// Compile Fragment Shader
-	printf("Compiling shader : %s\n", fragment.c_str());
 	char const * FragmentSourcePointer = FragmentShaderCode.c_str();
 	glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer , NULL);
 	glCompileShader(FragmentShaderID);
 
-	// Check Fragment Shader
 	glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
 	glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 	if ( InfoLogLength > 0 ){
 		std::vector<char> FragmentShaderErrorMessage(InfoLogLength+1);
 		glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
-		printf("%s\n", &FragmentShaderErrorMessage[0]);
 	}
 
-
-
-	// Link the program
-	printf("Linking program\n");
 	program = glCreateProgram();
 	glUseProgram(program);
 	glAttachShader(program, VertexShaderID);
 	glAttachShader(program, FragmentShaderID);
 	glLinkProgram(program);
 
-	// Check the program
 	glGetProgramiv(program, GL_LINK_STATUS, &Result);
 	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &InfoLogLength);
 	if ( InfoLogLength > 0 ){
 		std::vector<char> ProgramErrorMessage(InfoLogLength+1);
 		glGetProgramInfoLog(program, InfoLogLength, NULL, &ProgramErrorMessage[0]);
-		printf("%s\n", &ProgramErrorMessage[0]);
 	}
-
 
 	glDetachShader(program, VertexShaderID);
 	glDetachShader(program, FragmentShaderID);
@@ -311,72 +285,43 @@ void ParticleEmitter::loadShaders(std::string vertex, std::string fragment) {
 GLuint ParticleEmitter::loadTexture(const char *imagepath) {
 	GLuint _texture;
 	unsigned char header[54];
-	unsigned int dataPos;
 	unsigned int imageSize;
-	unsigned int width, height;
-	// RGB data
+	unsigned int width;
+	unsigned int height;
 	unsigned char *data;
 
 	FILE * file = fopen(imagepath ,"rb");
 	if (!file)
 		return 0;
-//		return printError("Impossible to open file!");
 
-	// Read the header, i.e. the 54 first bytes
-	// If less than 54 bytes are read, problem
-	if (fread(header, 1, 54, file)!=54 ||
-	    // A BMP files always begins with "BM"
-	    (header[0]!='B' || header[1]!='M') /*||
-	    // Make sure this is a 24bpp file
-	    *(int*)&(header[0x1E])!=0 || *(int*)&(header[0x1C])!=24*/) {
-//		printError("Not a correct BMP file (24 bits encoding needed)\n");
-		std::cout << "jtebaise" << std::endl;
+	if (fread(header, 1, 54, file)!=54 || (header[0]!='B' || header[1]!='M')) {
 		fclose(file);
 		return 0;
 	}
 
-	// Read the information about the image
-	dataPos    = *(int*)&(header[0x0A]);
 	imageSize  = *(int*)&(header[0x22]);
 	width      = *(int*)&(header[0x12]);
 	height     = *(int*)&(header[0x16]);
-
-	// Some BMP files are misformatted, guess missing information
-	if (imageSize==0) // 3 : one byte for each Red, Green and Blue component
+	if (imageSize==0)
 		imageSize=width*height*4;
-	if (dataPos==0)  // The BMP header is done that way
-		dataPos=54;
 
-	// Create a buffer
 	data = new unsigned char [imageSize];
-	// Read the actual data from the file into the buffer
 	fread(data,1,imageSize,file);
-	// Everything is in memory now, the file can be closed.
 	fclose (file);
-	// Create one OpenGL texture
 	glGenTextures(1, &_texture);
-	// "Bind" the newly created texture : all future texture functions will modify this texture
 	glBindTexture(GL_TEXTURE_2D, _texture);
-	// Give the image to OpenGL
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, data);
-	// OpenGL has now copied the data. Free our own version
 	delete [] data;
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	if (true) {  // Trilinear filtering
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		// Requires mipmaps. Generate them automatically.
-		glGenerateMipmap(GL_TEXTURE_2D);
-	} else {
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glGenerateMipmap(GL_TEXTURE_2D);
 	return _texture;
 }
 
-int ParticleEmitter::FindUnusedParticle(){
+int ParticleEmitter::FindUnusedParticle() {
 
 	for(int i=LastUsedParticle; i<size; i++){
 		if (particles[i].life <= 0.f){
@@ -391,6 +336,5 @@ int ParticleEmitter::FindUnusedParticle(){
 			return i;
 		}
 	}
-
-	return -1; // All particles are taken, override the first one
+	return -1;
 }

@@ -40,19 +40,23 @@ public:
 };
 bool static operator==(Node n1,Node n2){return n1.pos.x==n2.pos.x&&n1.pos.y==n2.pos.y;}
 bool static operator<(Node a , Node b){ return a.f<b.f;}
+bool static operator>(Node a , Node b){ return a.f>b.f;}
 bool static operator<(std::list<Node>::iterator a, std::list<Node>::iterator b){ return a->f<b->f;}
+bool static operator>(std::list<Node>::iterator a, std::list<Node>::iterator b){ return a->f>b->f;}
 
 class pathfinding{
 public:
-    static void map();
+    static std::array<std::array<Node, 12>, 12> map();
 
     //float heuristics( Position actuel , Position goal);
 
     static std::list<Node> Astar(Node agent , Node goal, array<array<Node,12>,12> map);
 
-    bool mapconfirm( Position actuel , Position goal,int map[12][12]);
-
-    bool walled(int map[12][12], Node n);
-
     static std::list<Node> path(array<array<Node,12>,12> map,Node goal);
+};
+
+class AStar {
+public:
+	AStar() = default;
+	std::list<Node> chain;
 };

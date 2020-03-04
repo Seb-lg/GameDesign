@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
 project(GameDesign)
-project(GameTest)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -39,29 +38,26 @@ add_executable(GameDesign
         components/Shapes.hpp
         components/Particle.cpp
         components/Particle.hpp
+        components/Speed3D.cpp
+        components/Speed3D.hpp
+        components/Keyboard.cpp
+        components/Keyboard.hpp
+        components/Hitbox.cpp
+        components/Hitbox.hpp
+        components/Flock.cpp
+        components/Flock.hpp
+        components/pathfinding.cpp
+        components/pathfinding.hpp
 
-        test/pathfinding.cpp
-        test/pathfinding.hpp
+        interfaces/LoadObject.cpp
+        interfaces/LoadObject.hpp
+        interfaces/Movement.cpp
+        interfaces/Movement.hpp
 
         Graphics.cpp
         Graphics.hpp
         Source.cpp
-        interfaces/LoadObject.cpp
-        interfaces/LoadObject.hpp
         Config.hpp
-        interfaces/Movement.cpp interfaces/Movement.hpp components/Speed3D.cpp components/Speed3D.hpp components/Keyboard.cpp components/Keyboard.hpp components/Hitbox.cpp components/Hitbox.hpp components/Flock.cpp components/Flock.hpp)
-
-add_executable(GameTest
-        test/MainTest.cpp
-        test/controls.cpp
-        test/controls.hpp
-        test/texture.cpp
-        test/texture.hpp
-        test/shader.cpp
-        test/shader.hpp
-        test/pathfinding.cpp
-        test/pathfinding.hpp
         )
 
 target_link_libraries(GameDesign ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARY} ${CMAKE_THREAD_LIBS_INIT} glfw GLEW)
-target_link_libraries(GameTest ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARY} ${CMAKE_THREAD_LIBS_INIT} glfw GLEW)

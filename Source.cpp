@@ -37,6 +37,7 @@ using namespace std;
 #include <components/Keyboard.hpp>
 #include <components/Hitbox.hpp>
 #include <components/Flock.hpp>
+#include <components/pathfinding.hpp>
 #include "Graphics.hpp"
 #include "components/Shapes.hpp"
 #include "components/Particle.hpp"
@@ -72,6 +73,8 @@ Graphics myGraphics;
 
 // Some global variable to do the animation.
 float t = 0.001f;
+ID player;
+std::array<std::array<Node, 12>, 12> mapp;
 
 int main(int argc, char *argv[]) {
 	keyStatus = new bool[1024];
@@ -81,14 +84,14 @@ int main(int argc, char *argv[]) {
 	auto &obj = ecs.getComponentMap<GraphicalObject>();
 
 
-//std::array<std::array<Node,12>,12> mapp = pathfinding::map();
-	int mapp[12][12];
-	for(int i=0;i<12;i++){
-		for(int j=0;j<12;j++){
+	mapp = pathfinding::map();
+//	int mapp[12][12];
+	for (int i = 0; i < 12; i++) {
+		for (int j = 0; j < 12; j++) {
 			int v2 = rand() % 100 + 1;
-			//if(mapp[i][j].walled){
-			if(v2>80||i==0||i==11||j==0||j==11){
-				ID od=LoadObject::Cube({i+2,0.5f,j+2});
+			if (mapp[i][j].walled) {
+//			if(v2>80||i==0||i==11||j==0||j==11){
+				ID od = LoadObject::Cube({i + 2, 0.5f, j + 2});
 				ecs.addComponent<Hitbox>(od, ecs.getComponentMap<GraphicalObject>()[od].obj_vertices);
 				obj[od].fillColor = glm::vec4(0.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);
 			}
@@ -96,25 +99,31 @@ int main(int argc, char *argv[]) {
 	}
 
 //	emit = new ParticleEmitter();
-	ID id = LoadObject::Cube({10.f, 0.5f, 10.f});
-	Movement::WASD(id);
-	ecs.addComponent<Hitbox>(id, ecs.getComponentMap<GraphicalObject>()[id].obj_vertices);
-	ecs.addComponent<Flock>(id);
-	auto &oui = ecs.getComponentMap<Flock>()[id];
-	for (int i = 0; i < 10; ++i) {
-		auto non = LoadObject::Sphere(glm::vec3((float)(rand() % 100) / 10.f, 4.5f, (float)(rand() % 100) / 10.f));
-		ecs.addComponent<Speed3D>(non, glm::vec3(0.f, 0.f, 0.f), 5.f);
-		ecs.addComponent<Hitbox>(non, non);
-		oui.childs.push_back(non);
-	}
-
-	ID od = LoadObject::Cube({7.f, 0.5f, 7.f});
-	ecs.addComponent<Hitbox>(od, ecs.getComponentMap<GraphicalObject>()[od].obj_vertices);
-
+	player = LoadObject::Cube({10.f, 0.5f, 10.f}, DEFAULTROT, {0.25f, 0.25f, 0.25f});
+	Movement::WASD(player);
+	ecs.addComponent<Hitbox>(player, player);
 	ID part = Entity::getId();
 	ecs.addComponent<ParticleEmitter>(part, 200);
 	ecs.addComponent<Position3D>(part, glm::vec3({0.f, 0.5f, 0.f}));
-	SceneTree::addSceneNode(part, id);
+	SceneTree::addSceneNode(part, player);
+
+	ID id = Entity::getId();
+	auto pos = glm::vec3((float) (10.f, 4.5f, 10.f));
+	ecs.addComponent<Position3D>(id, pos);
+	ecs.addComponent<Speed3D>(id, glm::vec3(0.f, 0.f, 0.f), 3.f);
+	SceneTree::addSceneNode(id, 0);
+	ecs.addComponent<Flock>(player);
+//	ecs.addComponent<AStar>(id);
+//	ecs.getComponentMap<AStar>()[id].chain = pathfinding::Astar(Node(pos.x, pos.z), Node(10, 10), mapp);
+	auto &flock = ecs.getComponentMap<Flock>()[player];
+	for (int i = 0; i < 10; ++i) {
+		auto elem = LoadObject::Sphere(
+			glm::vec3((float) (rand() % 100) / 10.f, 4.5f, (float) (rand() % 100) / 10.f));
+		ecs.addComponent<Speed3D>(elem, glm::vec3(0.f, 0.f, 0.f), 5.f);
+		ecs.addComponent<Hitbox>(elem, elem);
+		flock.childs.push_back(elem);
+	}
+
 
 	while (glfwWindowShouldClose(myGraphics.window) != GL_TRUE) {
 		ecs.update();
@@ -130,6 +139,37 @@ void startup() {
 	int event = 0;
 	ecs.addUpdate(++event, []() { updateCamera(); });
 	ecs.addUpdate(++event, []() { glfwPollEvents(); });
+	/*ecs.addUpdate(++event, []() {
+		auto &ecs = Ecs::get();
+		auto &astars = ecs.getComponentMap<AStar>();
+		auto &pos = ecs.getComponentMap<Position3D>();
+		auto &speed = ecs.getComponentMap<Speed3D>();
+
+		for (auto &astari : astars) {
+			auto &astar = astari.second;
+
+			if (astar.chain.empty()) {
+				std::cout << "ca me pete les boules" << std::endl;
+				astar.chain = pathfinding::Astar(Node(trunc(pos[astari.first].trans.x + 0.5f), trunc(pos[astari.first].trans.z + 0.5f)), Node(trunc(pos[player].trans.x + 0.5f), trunc(pos[player].trans.z + 0.5f)), mapp);
+			}
+
+			if (trunc(pos[astari.first].trans.x + 0.5f) == astar.chain.begin()->pos.x &&
+				trunc(pos[astari.first].trans.z + 0.5f) == astar.chain.begin()->pos.y) {
+				astar.chain.pop_front();
+			}
+
+			std::cout << astar.chain.begin()->pos.x << " " << astar.chain.begin()->pos.y << std::endl;
+			speed[astari.first].direction.x = (float)astar.chain.begin()->pos.x - pos[astari.first].trans.x;
+			speed[astari.first].direction.z = (float)astar.chain.begin()->pos.y - pos[astari.first].trans.z;
+			speed[astari.first].direction.y = 0.f;
+			auto total = abs(speed[astari.first].direction.x) + abs(speed[astari.first].direction.y) + abs(speed[astari.first].direction.z);
+			speed[astari.first].sped.x = (total == 0.f ? 0.f : ((speed[astari.first].direction.x * speed[astari.first].speed * deltaTime) / total));
+			speed[astari.first].sped.y = (total == 0.f ? 0.f : ((speed[astari.first].direction.y * speed[astari.first].speed * deltaTime) / total));
+			speed[astari.first].sped.z = (total == 0.f ? 0.f : ((speed[astari.first].direction.z * speed[astari.first].speed * deltaTime) / total));
+//			std::cout << pos[astari.first].trans.x << " " << pos[astari.first].trans.z << std::endl;
+//			std::cout << speed[astari.first].direction.x << " " << speed[astari.first].direction.z << std::endl << std::endl;
+		}
+	});*/
 	ecs.addUpdate(++event, [&]() {
 		auto &ecs = Ecs::get();
 		auto &keybs = ecs.getComponentMap<Keyboard>();
@@ -143,7 +183,7 @@ void startup() {
 			}
 		}
 	}); ///Update Keyboard
-	ecs.addUpdate(++event, [](){
+	ecs.addUpdate(++event, []() {
 		auto &ecs = Ecs::get();
 		auto &position = ecs.getComponentMap<Position3D>();
 		auto &speed = ecs.getComponentMap<Speed3D>();
@@ -154,10 +194,14 @@ void startup() {
 			for (auto const &id : flock.second.childs) {
 				speed[id].direction.x = goal.trans.x - position[id].trans.x;
 				speed[id].direction.z = goal.trans.z - position[id].trans.z;
-				auto total = abs(speed[id].direction.x) + abs(speed[id].direction.y) + abs(speed[id].direction.z);
-				speed[id].sped.x = (total == 0.f ? 0.f : ((speed[id].direction.x * speed[id].speed * deltaTime) / total));
-				speed[id].sped.y = (total == 0.f ? 0.f : ((speed[id].direction.y * speed[id].speed * deltaTime) / total));
-				speed[id].sped.z = (total == 0.f ? 0.f : ((speed[id].direction.z * speed[id].speed * deltaTime) / total));
+				auto total = abs(speed[id].direction.x) + abs(speed[id].direction.y) +
+					     abs(speed[id].direction.z);
+				speed[id].sped.x = (total == 0.f ? 0.f : (
+					(speed[id].direction.x * speed[id].speed * deltaTime) / total));
+				speed[id].sped.y = (total == 0.f ? 0.f : (
+					(speed[id].direction.y * speed[id].speed * deltaTime) / total));
+				speed[id].sped.z = (total == 0.f ? 0.f : (
+					(speed[id].direction.z * speed[id].speed * deltaTime) / total));
 			}
 			for (auto id = flock.second.childs.begin(); id != flock.second.childs.end(); ++id) {
 				auto &pos1 = position[*id];
@@ -165,13 +209,14 @@ void startup() {
 					if (*od == *id)
 						continue;
 					auto &pos2 = position[*od];
-					float dist = abs(pos2.trans.x - pos1.trans.x) + abs(pos2.trans.y - pos1.trans.y) + abs(pos2.trans.z - pos1.trans.z);
-					float repulsion = 0.5f * (1/exp(dist));
+					float dist =
+						abs(pos2.trans.x - pos1.trans.x) + abs(pos2.trans.y - pos1.trans.y) +
+						abs(pos2.trans.z - pos1.trans.z);
+					float repulsion = 0.5f * (1 / exp(dist));
 
 					speed[*id].sped.x += repulsion / dist * abs(pos2.trans.x - pos1.trans.x);
 					speed[*id].sped.y += repulsion / dist * abs(pos2.trans.y - pos1.trans.y);
 					speed[*id].sped.z += repulsion / dist * abs(pos2.trans.z - pos1.trans.z);
-					std::cout << repulsion / dist * abs(pos2.trans.x - pos1.trans.x) << " " << repulsion / dist * abs(pos2.trans.y - pos1.trans.y) << " " << repulsion / dist * abs(pos2.trans.z - pos1.trans.z) << std::endl;
 				}
 			}
 		}
@@ -182,34 +227,49 @@ void startup() {
 		auto &poss = ecs.getComponentMap<Position3D>();
 		auto &box = ecs.getComponentMap<Hitbox>();
 		auto ids = ecs.filter<Speed3D, Position3D>();
-		auto boxids = ecs.filter<Hitbox, Speed3D,  Position3D>();
+		auto boxids = ecs.filter<Hitbox, Speed3D, Position3D>();
 		auto boxidalls = ecs.filter<Hitbox, Position3D>();
 
 		for (auto &mov : boxids) {
-			for(auto &st : boxidalls) {
+			for (auto &st : boxidalls) {
 				if (mov == st)
 					continue;
 
-				if (poss[mov].trans.x + speeds[mov].sped.x + box[mov].minX > poss[st].trans.x + box[st].maxX)
+				if (poss[mov].trans.x + speeds[mov].sped.x + box[mov].minX >
+				    poss[st].trans.x + box[st].maxX)
 					continue;
 
-				if (poss[mov].trans.x + speeds[mov].sped.x + box[mov].maxX < poss[st].trans.x + box[st].minX)
+				if (poss[mov].trans.x + speeds[mov].sped.x + box[mov].maxX <
+				    poss[st].trans.x + box[st].minX)
 					continue;
 
-
-				if (poss[mov].trans.z + speeds[mov].sped.z + box[mov].minZ > poss[st].trans.z + box[st].maxZ)
+				if (poss[mov].trans.y + speeds[mov].sped.y + box[mov].minZ >
+				    poss[st].trans.y + box[st].maxZ)
 					continue;
 
-				if (poss[mov].trans.z + speeds[mov].sped.z + box[mov].maxZ < poss[st].trans.z + box[st].minZ)
+				if (poss[mov].trans.y + speeds[mov].sped.y + box[mov].maxZ <
+				    poss[st].trans.y + box[st].minZ)
+					continue;
+
+				if (poss[mov].trans.z + speeds[mov].sped.z + box[mov].minZ >
+				    poss[st].trans.z + box[st].maxZ)
+					continue;
+
+				if (poss[mov].trans.z + speeds[mov].sped.z + box[mov].maxZ <
+				    poss[st].trans.z + box[st].minZ)
 					continue;
 
 
 				if (poss[mov].trans.x + box[mov].minX > poss[st].trans.x + box[st].maxX ||
-					poss[mov].trans.x + box[mov].maxX < poss[st].trans.x + box[st].minX)
+				    poss[mov].trans.x + box[mov].maxX < poss[st].trans.x + box[st].minX)
 					speeds[mov].sped.x = 0;
 
+				if (poss[mov].trans.y + box[mov].minZ > poss[st].trans.y + box[st].maxZ ||
+				    poss[mov].trans.y + box[mov].maxZ < poss[st].trans.y + box[st].minZ)
+					speeds[mov].sped.y = 0;
+
 				if (poss[mov].trans.z + box[mov].minZ > poss[st].trans.z + box[st].maxZ ||
-					poss[mov].trans.z + box[mov].maxZ < poss[st].trans.z + box[st].minZ)
+				    poss[mov].trans.z + box[mov].maxZ < poss[st].trans.z + box[st].minZ)
 					speeds[mov].sped.z = 0;
 			}
 		}
@@ -305,7 +365,7 @@ void updateCamera() {
 	deltaTime = glfwGetTime() - lastTime;
 	lastTime = glfwGetTime();
 	GLfloat cameraSpeed = 3.1f * deltaTime;
-	if (keyStatus[GLFW_KEY_W]) myGraphics.cameraPosition += cameraSpeed * myGraphics.cameraFront;
+	/*if (keyStatus[GLFW_KEY_W]) myGraphics.cameraPosition += cameraSpeed * myGraphics.cameraFront;
 	if (keyStatus[GLFW_KEY_S]) myGraphics.cameraPosition -= cameraSpeed * myGraphics.cameraFront;
 	if (keyStatus[GLFW_KEY_A])
 		myGraphics.cameraPosition -=
@@ -319,7 +379,7 @@ void updateCamera() {
 	if (keyStatus[GLFW_KEY_SPACE])
 		myGraphics.cameraPosition += cameraSpeed * myGraphics.cameraUp;
 	if (keyStatus[GLFW_KEY_LEFT_CONTROL])
-		myGraphics.cameraPosition -= cameraSpeed * myGraphics.cameraUp;
+		myGraphics.cameraPosition -= cameraSpeed * myGraphics.cameraUp;*/
 
 	// IMPORTANT PART
 	// Calculate my view matrix using the lookAt helper function
