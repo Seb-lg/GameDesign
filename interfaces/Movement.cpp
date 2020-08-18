@@ -12,6 +12,8 @@
 #include <GLFW/glfw3.h>
 #include <glm/ext.hpp>
 
+#include <iostream>
+
 void Movement::ZQSD(ID id) {
 	fromKeys(id, {GLFW_KEY_Z, GLFW_KEY_Q, GLFW_KEY_S, GLFW_KEY_D});
 }
