@@ -8,7 +8,9 @@
 
 #include "Movement.hpp"
 #include "Ecs.hpp"
-#include <components/Shapes.hpp>
+#include <components/Position3D.hpp>
+#include <GLFW/glfw3.h>
+#include <glm/ext.hpp>
 
 void Movement::ZQSD(ID id) {
 	fromKeys(id, {GLFW_KEY_Z, GLFW_KEY_Q, GLFW_KEY_S, GLFW_KEY_D});
@@ -29,10 +31,10 @@ void Movement::fromKeys(ID id, std::vector<int> keys) {
 	ecs.addComponent<Speed3D>(id, glm::vec3(), SPEED);
 
 	auto &keyb = ecs.getComponent<Keyboard>(id);
-	auto &player = ecs.getComponent<GraphicalObject>(id);
+	auto &player = ecs.getComponent<Position3D>(id);
 
-		/// RELATIVE MOVEMENT
-		/// Forward
+	/// RELATIVE MOVEMENT
+	/// Forward
 	keyb.keys[keys[0]] = [&ecs, id, keys](bool down){
 		auto &speed = ecs.getComponentMap<Speed3D>()[id];
 		if (!down || keyStatus[keys[2]]) {
@@ -50,6 +52,7 @@ void Movement::fromKeys(ID id, std::vector<int> keys) {
 		speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
 		speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
 	};
+
 	/// Backward
 	keyb.keys[keys[2]] = [&ecs, id, keys](bool down){
 		auto &speed = ecs.getComponentMap<Speed3D>()[id];
@@ -68,6 +71,20 @@ void Movement::fromKeys(ID id, std::vector<int> keys) {
 		speed.sped.x = (total == 0.f ? 0.f : ((speed.direction.x * speed.speed * deltaTime) / total));
 		speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
 		speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
+	};
+
+	///Left
+	keyb.keys[keys[1]] = [&ecs, id, keys, &player] (bool down) {
+		if (down) {
+			player.rot = glm::rotate(player.rot, .05f, glm::vec3(0, 1, 0));
+		}
+	};
+
+	///Right
+	keyb.keys[keys[3]] = [&ecs, id, keys, &player] (bool down) {
+		if (down) {
+			player.rot = glm::rotate(player.rot, -.05f, glm::vec3(0, 1, 0));
+		}
 	};
 
 /*  /// ABSOLUTE MOVEMENT
