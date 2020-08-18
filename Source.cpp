@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
 
 //	emit = new ParticleEmitter();
 //	player = LoadObject::Cube({10.f, 0.5f, 10.f}, DEFAULTROT, {0.25f, 0.25f, 0.25f});
-	player = LoadObject::FromSource("/home/lulutor/CLionProjects/GameDesign/components/heavytriangletank.obj",{10.f, 0.5f, 10.f}, DEFAULTROT,{0.25f, 0.25f, 0.25f});
+	player = LoadObject::FromSource("./assets/heavytriangletank.obj",{10.f, 0.5f, 10.f}, DEFAULTROT,{0.25f, 0.25f, 0.25f});
 	Movement::WASD(player);
 	ecs.addComponent<Hitbox>(player, player);
 	ID part = Entity::getId();
@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
 //	ecs.getComponentMap<AStar>()[id].chain = pathfinding::Astar(Node(pos.x, pos.z), Node(10, 10), mapp);
 	auto &flock = ecs.getComponentMap<Flock>()[player];
 	for (int i = 0; i < 10; ++i) {
-		auto elem = LoadObject::FromSource("/home/lulutor/CLionProjects/GameDesign/components/heavytriangletank.obj",
+		auto elem = LoadObject::FromSource("./assets/heavytriangletank.obj",
 			glm::vec3((float) (rand() % 100) / 10.f, 0.5f, (float) (rand() % 100) / 10.f),DEFAULTROT,{0.125f,0.125f,0.125f});
 		ecs.addComponent<Speed3D>(elem, glm::vec3(0.f, 0.f, 0.f), 5.f);
 		ecs.addComponent<Hitbox>(elem, elem);

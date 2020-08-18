@@ -88,3 +88,10 @@ public:
 
 	~Line();
 };
+
+class Texture : public Shapes {
+public:
+	Texture();
+
+	~Texture();
+};

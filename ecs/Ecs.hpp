@@ -36,6 +36,14 @@ public:
 		return ecs::ComponentList<T>::get().getComponentMap();
 	}
 
+	/// Get a component T from ID
+	/// \tparam T component type
+	/// \return component map of type T
+	template<typename T>
+	T &getComponent(ID id) {
+		return ecs::ComponentList<T>::get().getComponentMap()[id];
+	}
+
 	/// Add a component of type T to an id
 	/// \tparam T the Type of the component
 	/// \tparam Args

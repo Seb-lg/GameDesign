@@ -1031,3 +1031,11 @@ f 6/9/4 2/14/4 1/10/4
 Line::~Line() {
 
 }
+
+Texture::Texture() {
+
+}
+
+Texture::~Texture() {
+
+}
