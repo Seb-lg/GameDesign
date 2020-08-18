@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
 //	player = LoadObject::Cube({10.f, 0.5f, 10.f}, DEFAULTROT, {0.25f, 0.25f, 0.25f});
 	player = LoadObject::FromSource("/home/lulutor/CLionProjects/GameDesign/components/heavytriangletank.obj",{10.f, 0.5f, 10.f}, DEFAULTROT,{0.25f, 0.25f, 0.25f});
 	Movement::WASD(player);
-//	ecs.addComponent<Hitbox>(player, player);
+	ecs.addComponent<Hitbox>(player, player);
 	ID part = Entity::getId();
 	ecs.addComponent<ParticleEmitter>(part, 200);
 	ecs.addComponent<Position3D>(part, glm::vec3({0.f, 0.5f, 0.f}));

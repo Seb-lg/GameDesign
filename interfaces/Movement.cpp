@@ -29,9 +29,7 @@ void Movement::fromKeys(ID id, std::vector<int> keys) {
 	ecs.addComponent<Speed3D>(id, glm::vec3(), SPEED);
 
 	auto &keyb = ecs.getComponentMap<Keyboard>()[id];
-	auto &player = ecs.getComponentMap<player>(id);
-
-		/// RELATIVE MOVEMENT
+	auto &player = ecs.getComponentMap<>()[id]
 		/// Forward
 	keyb.keys[keys[0]] = [&ecs, id, keys](bool down){
 		auto &speed = ecs.getComponentMap<Speed3D>()[id];
