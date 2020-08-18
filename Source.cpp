@@ -92,6 +92,7 @@ int main(int argc, char *argv[]) {
 			if (mapp[i][j].walled) {
 //			if(v2>80||i==0||i==11||j==0||j==11){
 				ID od = LoadObject::Cube({i + 2, 0.5f, j + 2});
+//				ID od = LoadObject::FromSource("neotank.obj");
 				ecs.addComponent<Hitbox>(od, ecs.getComponentMap<GraphicalObject>()[od].obj_vertices);
 				obj[od].fillColor = glm::vec4(0.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);
 			}
@@ -99,9 +100,10 @@ int main(int argc, char *argv[]) {
 	}
 
 //	emit = new ParticleEmitter();
-	player = LoadObject::Cube({10.f, 0.5f, 10.f}, DEFAULTROT, {0.25f, 0.25f, 0.25f});
+//	player = LoadObject::Cube({10.f, 0.5f, 10.f}, DEFAULTROT, {0.25f, 0.25f, 0.25f});
+	player = LoadObject::FromSource("/home/lulutor/CLionProjects/GameDesign/components/heavytriangletank.obj",{10.f, 0.5f, 10.f}, DEFAULTROT,{0.25f, 0.25f, 0.25f});
 	Movement::WASD(player);
-	ecs.addComponent<Hitbox>(player, player);
+//	ecs.addComponent<Hitbox>(player, player);
 	ID part = Entity::getId();
 	ecs.addComponent<ParticleEmitter>(part, 200);
 	ecs.addComponent<Position3D>(part, glm::vec3({0.f, 0.5f, 0.f}));
@@ -117,8 +119,8 @@ int main(int argc, char *argv[]) {
 //	ecs.getComponentMap<AStar>()[id].chain = pathfinding::Astar(Node(pos.x, pos.z), Node(10, 10), mapp);
 	auto &flock = ecs.getComponentMap<Flock>()[player];
 	for (int i = 0; i < 10; ++i) {
-		auto elem = LoadObject::Sphere(
-			glm::vec3((float) (rand() % 100) / 10.f, 4.5f, (float) (rand() % 100) / 10.f));
+		auto elem = LoadObject::FromSource("/home/lulutor/CLionProjects/GameDesign/components/heavytriangletank.obj",
+			glm::vec3((float) (rand() % 100) / 10.f, 0.5f, (float) (rand() % 100) / 10.f),DEFAULTROT,{0.125f,0.125f,0.125f});
 		ecs.addComponent<Speed3D>(elem, glm::vec3(0.f, 0.f, 0.f), 5.f);
 		ecs.addComponent<Hitbox>(elem, elem);
 		flock.childs.push_back(elem);
