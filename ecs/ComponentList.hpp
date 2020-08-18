@@ -47,7 +47,8 @@ namespace ecs {
 		/// Return a vector of ID matching the function given
 		/// \param function
 		/// \return
-		std::vector<ID> getIdForComponent(std::function<bool(T &)> function) {
+		std::vector<ID> -
+		        getIdForComponent(std::function<bool(T &)> function) {
 			std::vector<ID> ids;
 
 			for (auto map : _map) {

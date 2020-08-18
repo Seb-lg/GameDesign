@@ -80,12 +80,20 @@ std::array<std::array<Node, 12>, 12> pathfinding::map() {
 		}
 	}
 
+
+	for(int i=0;i<12;i++){
+		for(int j=0;j<12;j++){
+			std::cout<<mapp[i][j].walled<<" ";
+		}
+		cout<< endl;
+	}
 	//validate the map through A*
 	//initiate variables to validate the A*
 	Node pos = Node(10, 10);
 	Node goal = Node(1, 1);
 //    return;
 	if (Astar(pos, goal, mapp).empty()) {
+		cout<<"invalid map"<<endl;
 		return (map());
 	}
 	return mapp;
@@ -106,6 +114,7 @@ std::list<Node> pathfinding::path(array<array<Node, 12>, 12> map, Node goal) {
 		int tempY = map[x][y].parent.y;
 		x = tempX;
 		y = tempY;
+	cout<<"next point "<<x <<" "<<y<<endl;
 	}
 	path.push_back(map[x][y]);
 
