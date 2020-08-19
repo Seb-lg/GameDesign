@@ -33,6 +33,7 @@ using namespace std;
 
 #include <ecs/Time.hpp>
 #include <interfaces/Movement.hpp>
+#include <interfaces/Action.hpp>
 #include <components/Speed3D.hpp>
 #include <components/Keyboard.hpp>
 #include <components/Hitbox.hpp>
@@ -41,6 +42,7 @@ using namespace std;
 #include "Graphics.hpp"
 #include "components/Shapes.hpp"
 #include "components/Particle.hpp"
+
 //#include "components/pathfinding.hpp"
 
 // MAIN FUNCTIONS
@@ -84,30 +86,30 @@ int main(int argc, char *argv[]) {
 	auto &obj = ecs.getComponentMap<GraphicalObject>();
 
 
-	mapp = pathfinding::map();
-//	int mapp[12][12];
-	for (int i = 0; i < 12; i++) {
-		for (int j = 0; j < 12; j++) {
-			int v2 = rand() % 100 + 1;
-			if (mapp[i][j].walled) {
-//			if(v2>80||i==0||i==11||j==0||j==11){
-				ID od = LoadObject::Cube({i + 2, 0.5f, j + 2});
-//				ID od = LoadObject::FromSource("neotank.obj");
-				ecs.addComponent<Hitbox>(od, ecs.getComponentMap<GraphicalObject>()[od].obj_vertices);
-				obj[od].fillColor = glm::vec4(0.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);
-			}
-		}
-	}
+//	mapp = pathfinding::map();
+////	int mapp[12][12];
+//	for (int i = 0; i < 12; i++) {
+//		for (int j = 0; j < 12; j++) {
+//			int v2 = rand() % 100 + 1;
+//			if (mapp[i][j].walled) {
+////			if(v2>80||i==0||i==11||j==0||j==11){
+//				ID od = LoadObject::Cube({i + 2, 0.5f, j + 2});
+//				ecs.addComponent<Hitbox>(od, ecs.getComponentMap<GraphicalObject>()[od].obj_vertices);
+//				obj[od].fillColor = glm::vec4(0.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);
+//			}
+//		}
+//	}
 
 //	emit = new ParticleEmitter();
 //	player = LoadObject::Cube({10.f, 0.5f, 10.f}, DEFAULTROT, {0.25f, 0.25f, 0.25f});
-	player = LoadObject::FromSource("./assets/heavytriangletank.obj",{10.f, 0.5f, 10.f}, DEFAULTROT,{0.25f, 0.25f, 0.25f});
+	player = LoadObject::FromSource("./assets/neotriangletank.obj",{10.f, 0.5f, 10.f}, DEFAULTROT,{0.25f, 0.25f, 0.25f});
 	Movement::WASD(player);
+	Shoot::WASD(player);
 	ecs.addComponent<Hitbox>(player, player);
-	ID part = Entity::getId();
-	ecs.addComponent<ParticleEmitter>(part, 200);
-	ecs.addComponent<Position3D>(part, glm::vec3({0.f, 0.5f, 0.f}));
-	SceneTree::addSceneNode(part, player);
+//	ID part = Entity::getId();
+//	ecs.addComponent<ParticleEmitter>(part, 200);
+//	ecs.addComponent<Position3D>(part, glm::vec3({0.f, 0.5f, 0.f}));
+//	SceneTree::addSceneNode(part, player);
 
 	ID id = Entity::getId();
 	auto pos = glm::vec3((float) (10.f, 4.5f, 10.f));
@@ -118,8 +120,8 @@ int main(int argc, char *argv[]) {
 //	ecs.addComponent<AStar>(id);
 //	ecs.getComponentMap<AStar>()[id].chain = pathfinding::Astar(Node(pos.x, pos.z), Node(10, 10), mapp);
 	auto &flock = ecs.getComponentMap<Flock>()[player];
-	for (int i = 0; i < 10; ++i) {
-		auto elem = LoadObject::FromSource("./assets/heavytriangletank.obj",
+	for (int i = 0; i < 5; ++i) {
+		auto elem = LoadObject::FromSource("./assets/soucoupe-support.obj",
 			glm::vec3((float) (rand() % 100) / 10.f, 0.5f, (float) (rand() % 100) / 10.f),DEFAULTROT,{0.125f,0.125f,0.125f});
 		ecs.addComponent<Speed3D>(elem, glm::vec3(0.f, 0.f, 0.f), 5.f);
 		ecs.addComponent<Hitbox>(elem, elem);
@@ -308,8 +310,19 @@ void startup() {
 			particles[id].update(myGraphics.viewMatrix, myGraphics.projMatrix, positions[id].worldTrans);
 		}
 	}); ///Update and Draw Particles
-	ecs.addUpdate(++event, []() { glfwSwapBuffers(myGraphics.window); });
+	ecs.addUpdate(++event, []() { glfwSwapBuffers(myGraphics.window);
+	});///Update and destroy the mine
+	ecs.addUpdate(++event, [&]() {
+		auto &ecs = Ecs::get();
+		auto &positions = ecs.getComponentMap<Position3D>();
+		auto &graphicals = ecs.getComponentMap<GraphicalObject>();
+		for (auto &graphical: graphicals) {
 
+			for (auto &graphical2: graphicals) {
+
+				}
+		}
+	});
 	// Keep track of the running time
 	GLfloat currentTime = (GLfloat) glfwGetTime();
 	deltaTime = currentTime;

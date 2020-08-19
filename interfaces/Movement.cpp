@@ -11,7 +11,7 @@
 #include <components/Position3D.hpp>
 #include <GLFW/glfw3.h>
 #include <glm/ext.hpp>
-
+#include <glm/glm.hpp>
 #include <iostream>
 
 void Movement::ZQSD(ID id) {
@@ -35,61 +35,71 @@ void Movement::fromKeys(ID id, std::vector<int> keys) {
 	auto &keyb = ecs.getComponent<Keyboard>(id);
 	auto &player = ecs.getComponent<Position3D>(id);
 
-	/// RELATIVE MOVEMENT
-	/// Forward
-	keyb.keys[keys[0]] = [&ecs, id, keys](bool down){
-		auto &speed = ecs.getComponentMap<Speed3D>()[id];
-		if (!down || keyStatus[keys[2]]) {
-			if (!keyStatus[keys[2]])
-				speed.direction.x = 0;
-			auto total = abs(speed.direction.x) + abs(speed.direction.y) + abs(speed.direction.z);
-			speed.sped.x = (total == 0.f ? 0.f : ((speed.direction.x * speed.speed * deltaTime) / total));
-			speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
-			speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
-			return;
-		}
-		speed.direction.x = 1;
-		auto total = abs(speed.direction.x) + abs(speed.direction.y) + abs(speed.direction.z);
-		speed.sped.x = (total == 0.f ? 0.f : ((speed.direction.x * speed.speed * deltaTime) / total));
-		speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
-		speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
-	};
+//	/// RELATIVE MOVEMENT
+//
+//
+//	/// Forward
+//	keyb.keys[keys[0]] = [&ecs, id, keys](bool down){
+//		auto &speed = ecs.getComponentMap<Speed3D>()[id];
+//		if (!down || keyStatus[keys[2]]) {
+//			if (!keyStatus[keys[2]])
+//				speed.direction.x = 0;
+//			auto total = abs(speed.direction.x) + abs(speed.direction.y) + abs(speed.direction.z);
+//			speed.sped.x = (total == 0.f ? 0.f : ((speed.direction.x * speed.speed * deltaTime) / total));
+//			speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
+//			speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
+//			return;
+//		}
+//		speed.direction.x = 1;
+//		auto total = abs(speed.direction.x) + abs(speed.direction.y) + abs(speed.direction.z);
+//		speed.sped.x = (total == 0.f ? 0.f : ((speed.direction.x * speed.speed * deltaTime) / total));
+//		speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
+//		speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
+//	};
+//
+//	/// Backward
+//	keyb.keys[keys[2]] = [&ecs, id, keys, &player](bool down){
+//		auto &speed = ecs.getComponentMap<Speed3D>()[id];
+//		if (!down || keyStatus[keys[0]]) {
+//			if (!keyStatus[keys[0]]) {
+//				speed.direction.x = 0;
+//				speed.direction.z = 0;
+//			}
+//			auto total = abs(speed.direction.x) + abs(speed.direction.y) + abs(speed.direction.z);
+//			speed.sped.x = (total == 0.f ? 0.f : ((speed.direction.x * speed.speed * deltaTime) / total));
+//			speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
+//			speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
+//			return;
+//		}
+//		auto &playerpos = glm::translate(player.rot);
+//		if(player.rot[0][0]==1 ){
+//			speed.direction.x = -1;}
+//		else{speed.direction.x=-1;}
+//		if(player.rot[2][2] ==1 ){
+//			speed.direction.z = 1;
+//		}
+//		else{speed.direction.z=-1;}
+//		auto total = abs(speed.direction.x) + abs(speed.direction.y) + abs(speed.direction.z);
+//		speed.sped.x = (total == 0.f ? 0.f : ((speed.direction.x * speed.speed * deltaTime) / total));
+//		speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
+//		speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
+//	};
 
-	/// Backward
-	keyb.keys[keys[2]] = [&ecs, id, keys](bool down){
-		auto &speed = ecs.getComponentMap<Speed3D>()[id];
-		if (!down || keyStatus[keys[0]]) {
-			if (!keyStatus[keys[0]]) {
-				speed.direction.x = 0;
-			}
-			auto total = abs(speed.direction.x) + abs(speed.direction.y) + abs(speed.direction.z);
-			speed.sped.x = (total == 0.f ? 0.f : ((speed.direction.x * speed.speed * deltaTime) / total));
-			speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
-			speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
-			return;
-		}
-		speed.direction.x = -1;
-		auto total = abs(speed.direction.x) + abs(speed.direction.y) + abs(speed.direction.z);
-		speed.sped.x = (total == 0.f ? 0.f : ((speed.direction.x * speed.speed * deltaTime) / total));
-		speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
-		speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
-	};
+//	///Left
+//	keyb.keys[keys[1]] = [&ecs, id, keys, &player] (bool down) {
+//		if (down) {
+//			player.rot = glm::rotate(player.rot, .05f, glm::vec3(0, 1, 0));
+//		}
+//	};
+//
+//	///Right
+//	keyb.keys[keys[3]] = [&ecs, id, keys, &player] (bool down) {
+//		if (down) {
+//			player.rot = glm::rotate(player.rot, -.05f, glm::vec3(0, 1, 0));
+//		}
+//	};
 
-	///Left
-	keyb.keys[keys[1]] = [&ecs, id, keys, &player] (bool down) {
-		if (down) {
-			player.rot = glm::rotate(player.rot, .05f, glm::vec3(0, 1, 0));
-		}
-	};
-
-	///Right
-	keyb.keys[keys[3]] = [&ecs, id, keys, &player] (bool down) {
-		if (down) {
-			player.rot = glm::rotate(player.rot, -.05f, glm::vec3(0, 1, 0));
-		}
-	};
-
-/*  /// ABSOLUTE MOVEMENT
+ /// ABSOLUTE MOVEMENT
 	/// Forward
 	keyb.keys[keys[0]] = [&ecs, id, keys](bool down){
 		auto &speed = ecs.getComponentMap<Speed3D>()[id];
@@ -167,5 +177,7 @@ void Movement::fromKeys(ID id, std::vector<int> keys) {
 		speed.sped.x = (total == 0.f ? 0.f : ((speed.direction.x * speed.speed * deltaTime) / total));
 		speed.sped.y = (total == 0.f ? 0.f : ((speed.direction.y * speed.speed * deltaTime) / total));
 		speed.sped.z = (total == 0.f ? 0.f : ((speed.direction.z * speed.speed * deltaTime) / total));
-	};*/
+	};
+
+
 }

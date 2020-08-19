@@ -58,6 +58,6 @@ add_executable(GameDesign
         Graphics.hpp
         Source.cpp
         Config.hpp
-        components/Action.cpp components/Action.hpp)
+        interfaces/Action.cpp interfaces/Action.hpp)
 
 target_link_libraries(GameDesign ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARY} ${CMAKE_THREAD_LIBS_INIT} glfw GLEW)

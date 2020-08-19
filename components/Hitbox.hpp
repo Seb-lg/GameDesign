@@ -14,6 +14,7 @@ public:
 	Hitbox() = default;
 	Hitbox(ID id);
 	Hitbox(std::vector<glm::vec3> vertexs, glm::vec3 scale = DEFAULTSCALE);
+	bool explode;
 	float maxX;
 	float minX;
 	float maxY;
