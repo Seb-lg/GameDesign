@@ -5,7 +5,9 @@
 #include <components/Keyboard.hpp>
 #include <components/Speed3D.hpp>
 #include <Config.hpp>
+#include <queue>
 
+#include "SceneTree.hpp"
 #include "Action.hpp"
 #include "Ecs.hpp"
 #include <components/Position3D.hpp>
@@ -42,10 +44,11 @@ void Shoot::fromKeys(ID id,std::vector<int> keys) {
 		if (!down) {
 		} else {
 //			auto bullet = LoadObject::Cube(playerpos.trans, playerpos.rot, {0.25f, 0.25f, 0.5f});
-			ID bulletid = Entity::getId();
-			auto bullet = LoadObject::FromSource("./assets/heavytriangletank.obj",playerpos.trans, playerpos.rot,{0.25f, 0.25f, 0.25f});
+			ID bullet = Entity::getId();
+			bullet = LoadObject::FromSource("./assets/heavytriangletank.obj", playerpos.trans, playerpos.rot,
+			                                {0.25f, 0.25f, 0.25f});
+			ecs.addComponent<Position3D>(bullet);
 			ecs.addComponent<Hitbox>(bullet, bullet);
-			ecs.addComponent<ParticleEmitter>(bullet, 10);
 			SceneTree::addSceneNode(bullet, id);
 		}
 	};
@@ -76,10 +79,53 @@ void Shoot::fromKeys(ID id,std::vector<int> keys) {
 		if (!down) {
 		} else {
 			///for each bullet : destroy whatever touch the hitbox then destroy bullet.
-			auto &mines = ecs.getComponentMap<ParticleEmitter>();
-			for(auto &mine: mines){
-				
+
+			std::queue<SceneTree *> queue;
+			SceneTree *parentNode = &Ecs::get().tree;
+			queue.push(parentNode);;
+			auto &speeds = ecs.getComponentMap<Speed3D>();
+			auto &poss = ecs.getComponentMap<Position3D>();
+			auto &box = ecs.getComponentMap<Hitbox>();
+			auto ids = ecs.filter<Speed3D, Position3D>();
+			auto boxids = ecs.filter<Hitbox, Speed3D, Position3D>();
+			auto boxidalls = ecs.filter<Hitbox, Position3D>();
+
+			while (!queue.empty()) {
+				auto node = queue.front();
+				queue.pop();
+				if (node->id == id) {
+					parentNode = node;
+					break;
+				}
+				for (auto &elem : node->childs) {
+					///check if has hitbox and take the X,Y,Z to compare if any object is in contact.
+					if (ecs.idHasComponents<Hitbox>(node->id)) {
+						for (auto &mov : boxids) {
+							for (auto &st : boxidalls) {
+								if (mov == st)
+									continue;
+								if (poss[mov].trans.x + box[mov].minX > poss[st].trans.x + box[st].maxX ||
+								    poss[mov].trans.x + box[mov].maxX < poss[st].trans.x + box[st].minX) {
+									ecs.deleteId(st);
+									cout<<ecs.isDeleted(st)<<endl;
+								}
+								if (poss[mov].trans.y + box[mov].minZ > poss[st].trans.y + box[st].maxZ ||
+								    poss[mov].trans.y + box[mov].maxZ < poss[st].trans.y + box[st].minZ) {
+									ecs.deleteId(st);
+									cout<<ecs.isDeleted(st)<<endl;
+								}
+								if (poss[mov].trans.z + box[mov].minZ  > poss[st].trans.z + box[st].maxZ ||
+								    poss[mov].trans.z + box[mov].maxZ < poss[st].trans.z + box[st].minZ) {
+									ecs.deleteId(st);
+									cout<<ecs.isDeleted(st)<<endl;
+								}
+							}
+						}
+
+					}
+				}
+
 			}
-		}
+		};
 	};
 }
