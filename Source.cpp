@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
 //	player = LoadObject::Cube({10.f, 0.5f, 10.f}, DEFAULTROT, {0.25f, 0.25f, 0.25f});
 	player = LoadObject::FromSource("./assets/neotriangletank.obj",{10.f, 0.5f, 10.f}, DEFAULTROT,{0.25f, 0.25f, 0.25f});
 	Movement::WASD(player);
-	Shoot::WASD(player);
+	Action::WASD(player);
 	ecs.addComponent<Hitbox>(player, player);
 //	ID part = Entity::getId();
 //	ecs.addComponent<ParticleEmitter>(part, 200);
@@ -120,11 +120,17 @@ int main(int argc, char *argv[]) {
 //	ecs.addComponent<AStar>(id);
 //	ecs.getComponentMap<AStar>()[id].chain = pathfinding::Astar(Node(pos.x, pos.z), Node(10, 10), mapp);
 	auto &flock = ecs.getComponentMap<Flock>()[player];
-	for (int i = 0; i < 5; ++i) {
+	for (int i = 0; i < 2; ++i) {
 		auto elem = LoadObject::FromSource("./assets/soucoupe-support.obj",
 			glm::vec3((float) (rand() % 100) / 10.f, 0.5f, (float) (rand() % 100) / 10.f),DEFAULTROT,{0.125f,0.125f,0.125f});
 		ecs.addComponent<Speed3D>(elem, glm::vec3(0.f, 0.f, 0.f), 5.f);
 		ecs.addComponent<Hitbox>(elem, elem);
+
+		ID part = Entity::getId();
+		ecs.addComponent<ParticleEmitter>(part, 100);
+		ecs.addComponent<Position3D>(part, glm::vec3({0.f, 0.5f, 0.f}));
+		SceneTree::addSceneNode(part, elem);
+		SceneTree::addSceneNode(elem, id);
 		flock.childs.push_back(elem);
 	}
 
@@ -311,17 +317,6 @@ void startup() {
 		}
 	}); ///Update and Draw Particles
 	ecs.addUpdate(++event, []() { glfwSwapBuffers(myGraphics.window);
-	});///Update and destroy the mine
-	ecs.addUpdate(++event, [&]() {
-		auto &ecs = Ecs::get();
-		auto &positions = ecs.getComponentMap<Position3D>();
-		auto &graphicals = ecs.getComponentMap<GraphicalObject>();
-		for (auto &graphical: graphicals) {
-
-			for (auto &graphical2: graphicals) {
-
-				}
-		}
 	});
 	// Keep track of the running time
 	GLfloat currentTime = (GLfloat) glfwGetTime();
@@ -338,7 +333,7 @@ void startup() {
 	myGraphics.aspect = (float) myGraphics.windowWidth / (float) myGraphics.windowHeight;
 	myGraphics.projMatrix = glm::perspective(glm::radians(50.0f), myGraphics.aspect, 0.1f, 1000.0f);
 
-	ID myFloor = LoadObject::Cube(glm::vec3(7.5f, 0.0f, 7.5f), DEFAULTROT, glm::vec3(12.0f, 0.001f, 12.0f));
+	ID myFloor = LoadObject::Cube(glm::vec3(7.5f, 0.0f, 7.5f), DEFAULTROT, glm::vec3(20.0f, 0.01f, 20.0f));
 	obj[myFloor].fillColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);
 	obj[myFloor].lineColor = glm::vec4(130.0f / 255.0f, 96.0f / 255.0f, 61.0f / 255.0f, 1.0f);
 

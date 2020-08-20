@@ -39,7 +39,7 @@ ParticleEmitter::ParticleEmitter(GLuint size, bool autoEmit) : size(size), autoE
 		this->particles.emplace_back();
 
 	glUseProgram(program);
-	texture = loadTexture("assets/dollarwhite.bmp");
+	texture = loadTexture("assets/fire.bmp");
 	glGenBuffers(1, &billboard_vertex_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, billboard_vertex_buffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);

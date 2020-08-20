@@ -6,7 +6,7 @@
 #include <vector>
 #include "components/Shapes.hpp"
 
-class Shoot{
+class Action{
 public:
 	static void ZQSD(ID id);
 	static void WASD(ID id);
